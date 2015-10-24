@@ -297,7 +297,7 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 更多信息请参考文档：<a href="http://support.impactradius.com/display/ADVERTISER/Batch+FTP+Tracking+Method">Batch FTP Tracking Method</a>、<a href="http://support.impactradius.com/display/ADVERTISER/Guide+-+Tracking+Integration#Guide-TrackingIntegration-AdvertiserFTPConversionReportingMethodforOnlineActions">Advertiser FTP Conversion Reporting Method</a></p></li>
 <li><p>Web Services<br/>
 这里的Web Services不是通常意义上的Web Service，其实它就是个HTTP REST API。各个编程语言都有HTTP Client可以使用。<br/>
-请详细阅读文档<a href="http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking">Web Services Tracking</a>中关于authenticate的内容。<br/>
+请详细阅读文档<a href="http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking">Web Services Tracking</a>中关于<code>authenticate</code>的内容。<br/>
 更多信息请参考文档：<a href="http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking">Web Services Tracking</a>、<a href="http://dev.impactradius.com/display/api/Conversions">API-Conversions</a>  <br/>
 <code>纠错</code>：在文档<a href="http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking">Web Services Tracking</a>中Conversions的api接口</p>
 
@@ -320,6 +320,41 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 <p>下面我们重点说一下Action Tracker的测试。<code>在开始测试之前请Advertiser确保你们的开发人员已经拿到了IR系统的账号</code>。</p>
 
 <h6>Action Tracker的测试</h6>
+
+<p>点击要测试的Action Tracker的<code>Actions</code>按钮，然后选择<code>Test</code>。<br/>
+如果您测试的是Pixel类型的Action Tracker，请先选择<code>Tracking Code</code>来获取要埋入到页面里的JavaScript代码，然后再点击页面下方的<code>Continue To Testing</code>即可进入到测试页面。下面是一段JavaScript脚本样例，请认真对待里面的注释内容。</p>
+
+<pre><code>&lt;!-- Impact Radius Tracking Code.
+Removal or modification of this code will disrupt marketing activities. This code is property of Impact Radius, please do not remove or modify without first contacting Impact Radius Technical Services.
+--&gt;
+&lt;script type="text/javascript" src="//d33wwcok8lortz.cloudfront.net/js/3141/8324/irv3.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+    // required advertiser supplied values
+    irEvent.setOrderId("Your Order Id here");
+
+    // At least one item is necessary.  The parameters are
+    // cat: A category, for example "electronics".  Required
+    // sku: A unique product identifier, or Storage Keeping Unit
+    // amt: The total sale amount for this line item.  Required
+    // qty: The quantity of the line item.  Required.
+    irEvent.addItem("electronics", "220-2300", "112000.00", "56");  // 56 identical gizmos at 2000.00 each
+    irEvent.setCurrency("CNY"); //可选项，请参考前面对Currency字段的描述。
+
+    irEvent.fire();
+&lt;/script&gt;
+</code></pre>
+
+<p>细心的同学可能注意到了，这里面回传的参数与我们在流程细节里描述的不一致，根本就没有CampaignId、ActionTrackerId、ClickId和EventDate等参数。是的，在Pixel方式里的确不用显式的传入这些参数，IR会通过其他形式自己获取到。比如，页面加载的"/js/3141/8324/irv3.js"文件里就包含了CampaignId和ActionTrackerId；ClickId在传给你的入口页面之前IR就已经以其他方式保存到自己的cookie里了，当irEvent.fire()的时候就会带过去，同时呢，EventDate也有了。</p>
+
+<p>测试流程大同小异，我们以Web Service方式为例： <br/>
+<img src="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-test-page.png" alt="web-service-test-page" />
+你需要的<code>CampaignId</code>、<code>ActionTrackerId</code>、<code>ClickId</code>都有了。<br/>
+Landing Page URL就是我们上面提到的入口页面。这里有个小技巧。当技术人员在本地完成所有的开发工作后，可直接在测试页面对本地项目进行测试，无须部署到线上之后再测，这样可以避免因为一些小问题而频繁的上线。请把Landing Page URL中的域名改成你本地的地址，如127.0.0.1之类的，irmpname参数的值可直接替换成<code>Extrabux Shanghai</code>，clickid参数的值IR会自动替换成上面的Test Key。点击<code>Start Test in New Window</code>按钮后启动测试，页面里随之会出现一个loading条，IR在等待你回传数据给它。<br/>
+为了方便开发理解，我使用了一个Chrome浏览器的Postman插件来回传数据，截图在<a href="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-back-data-to-ir.png">这里</a>。<br/>
+当IR收到回传的数据后，测试页面会进入到<code>Complete a Conversion</code>，如下图所示<img src="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-data-view.png" alt="" /><br/>
+在此页面中校验下IR接收到的数据和你回传的是否一致，如果一致，请挨个<code>Correct</code>，然后点击页面下方的<code>Validate</code>按钮来激活此Action Tracker。回到列表页面后可以发现此Action Tracker的<code>Test Status</code>已经变成<code>Successful</code>了。</p>
+
+<p>Action Tracker的测试到此完成。</p>
 <div class="footnotes">
 <hr/>
 <ol>
