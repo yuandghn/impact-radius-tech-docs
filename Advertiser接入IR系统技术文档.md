@@ -133,7 +133,7 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 前期在Advertiser不熟悉IR的情况下可由Extrabux协助创建Action Tracker，但我们希望后面Advertiser能够自己来掌控Action Tracker，毕竟这是IR里最经常用到的功能。  
 
 下面我们重点说一下Action Tracker的测试。`在开始测试之前请Advertiser确保你们的开发人员已经拿到了IR系统的账号`。
-######Action Tracker的测试
+######Action Tracker的测试  
 
 
 
