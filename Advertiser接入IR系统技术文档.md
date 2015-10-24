@@ -118,7 +118,7 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 
 - Web Services  
 这里的Web Services不是通常意义上的Web Service，其实它就是个HTTP REST API。各个编程语言都有HTTP Client可以使用。  
-请详细阅读文档[Web Services Tracking](http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking)中关于authenticate的内容。  
+请详细阅读文档[Web Services Tracking](http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking)中关于`authenticate`的内容。  
 更多信息请参考文档：[Web Services Tracking](http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking)、[API-Conversions](http://dev.impactradius.com/display/api/Conversions)    
 `纠错`：在文档[Web Services Tracking](http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking)中Conversions的api接口    
 		
@@ -134,8 +134,38 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 
 下面我们重点说一下Action Tracker的测试。`在开始测试之前请Advertiser确保你们的开发人员已经拿到了IR系统的账号`。
 ######Action Tracker的测试  
+点击要测试的Action Tracker的`Actions`按钮，然后选择`Test`。  
+如果您测试的是Pixel类型的Action Tracker，请先选择`Tracking Code`来获取要埋入到页面里的JavaScript代码，然后再点击页面下方的`Continue To Testing`即可进入到测试页面。下面是一段JavaScript脚本样例，请认真对待里面的注释内容。
 
+	<!-- Impact Radius Tracking Code.
+	Removal or modification of this code will disrupt marketing activities. This code is property of Impact Radius, please do not remove or modify without first contacting Impact Radius Technical Services.
+	-->
+	<script type="text/javascript" src="//d33wwcok8lortz.cloudfront.net/js/3141/8324/irv3.js"></script>
+	<script type="text/javascript">
+		// required advertiser supplied values
+		irEvent.setOrderId("Your Order Id here");
+		
+		// At least one item is necessary.  The parameters are
+		// cat: A category, for example "electronics".  Required
+		// sku: A unique product identifier, or Storage Keeping Unit
+		// amt: The total sale amount for this line item.  Required
+		// qty: The quantity of the line item.  Required.
+  		irEvent.addItem("electronics", "220-2300", "112000.00", "56");  // 56 identical gizmos at 2000.00 each
+  		irEvent.setCurrency("CNY"); //可选项，请参考前面对Currency字段的描述。
 
+ 		irEvent.fire();
+	</script>
+细心的同学可能注意到了，这里面回传的参数与我们在流程细节里描述的不一致，根本就没有CampaignId、ActionTrackerId、ClickId和EventDate等参数。是的，在Pixel方式里的确不用显式的传入这些参数，IR会通过其他形式自己获取到。比如，页面加载的"/js/3141/8324/irv3.js"文件里就包含了CampaignId和ActionTrackerId；ClickId在传给你的入口页面之前IR就已经以其他方式保存到自己的cookie里了，当irEvent.fire()的时候就会带过去，同时呢EventDate也有了。  
+
+测试流程大同小异，我们以Web Service方式为例：   
+![web-service-test-page](http://7xnrpy.com1.z0.glb.clouddn.com/web-service-test-page.png)
+你需要的`CampaignId`、`ActionTrackerId`、`ClickId`都有了。  
+Landing Page URL就是我们上面提到的入口页面。这里有个小技巧。当技术人员在本地完成所有的开发工作后，可直接在测试页面对本地项目进行测试，无须部署到线上之后再测，这样可以避免因为一些小问题而频繁的上线。请把Landing Page URL中的域名改成你本地的地址，如127.0.0.1之类的，irmpname参数的值可直接替换成`Extrabux Shanghai`，clickid参数的值IR会自动替换成上面的Test Key。点击`Start Test in New Window`按钮后启动测试，页面里随之会出现一个loading条，IR在等待你回传数据给它。  
+为了方便开发理解，我使用了一个Chrome浏览器的Postman插件来回传数据，截图在[这里](http://7xnrpy.com1.z0.glb.clouddn.com/web-service-back-data-to-ir.png)。  
+当IR收到回传的数据后，测试页面会进入到`Complete a Conversion`，如下图所示![](http://7xnrpy.com1.z0.glb.clouddn.com/web-service-data-view.png)  
+在此页面中校验下IR接收到的数据和你回传的是否一致，如果一致，请挨个`Correct`，然后点击页面下方的`Validate`按钮来激活此Action Tracker。回到列表页面后可以发现此Action Tracker的`Test Status`已经变成`Successful`了。  
+
+Action Tracker的测试到此完成。
 
 
 [^1]:订单金额里可能包含优惠券、积分等内容，Advertiser可根据自身的业务需求来决定是否剔除它们。
