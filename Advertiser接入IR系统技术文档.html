@@ -206,7 +206,7 @@ Advertiser须将这两个参数<sup id="fnref:6"><a href="#fn:6" rel="footnote">
 <li><code>Currency</code>：可选项。货币的缩写。如果Advertiser和用户之间的交易不是以美元来结算的，请设置此属性，如人民币的货币缩写为CNY<sup id="fnref:10"><a href="#fn:10" rel="footnote">10</a></sup>。因为IR默认是以美元来结算，设置Currency后，IR会自动根据当前汇率将Amount换算成美元。</li>
 </ul>
 </li>
-<li>IR接收到数据后，出Reports给Advertiser和Extrabux看。数据的锁定期默认是15天(可修改)。在锁定期内，Advertiser可对数据进行修正操作，如修改和撤消；锁定期一过，意味着Advertiser认可交易数据，IR随后会将佣金转给Extrabux。</li>
+<li>IR接收到数据后，出Reports给Advertiser和Extrabux看。数据的话期默认是15天(可修改)。在锁定期内，Advertiser可对数据进行修正操作，如修改和撤消；锁定期一过，意味着Advertiser认可交易数据，IR随后会将佣金转给Extrabux。</li>
 <li>Extraubx收到佣金后再与用户进行结算。</li>
 </ol>
 
@@ -307,6 +307,28 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 <p>是错误的。正确的应该是</p>
 
 <pre><code>  https://api.impactradius.com/Advertisers/{AccountSid}/Conversions
+</code></pre>
+
+<p>调用Web Services API成功后类似的返回信息：</p>
+
+<pre><code>  &lt;ImpactRadiusResponse&gt;
+      &lt;Status&gt;QUEUED&lt;/Status&gt;
+      &lt;QueuedUri&gt;/Advertisers/{AccountSid}/BatchSummaries/XysrtIBGGA&lt;/QueuedUri&gt; 
+  &lt;/ImpactRadiusResponse&gt;
+</code></pre>
+
+<p>失败时类似的返回信息：</p>
+
+<pre><code>  &lt;ImpactRadiusResponse&gt;
+      &lt;Status&gt;ERROR&lt;/Status&gt;
+      &lt;Message&gt;Validation Failed&lt;/Message&gt;
+      &lt;Errors&gt;
+          &lt;Error&gt;
+              &lt;Field&gt;CampaignId&lt;/Field&gt;
+              &lt;Message&gt;Invalid value xyz&lt;/Code&gt;
+          &lt;/Error&gt;
+      &lt;/Errors&gt;        
+  &lt;/ImpactRadiusResponse&gt;
 </code></pre></li>
 </ul>
 
@@ -354,7 +376,33 @@ Landing Page URL就是我们上面提到的入口页面。这里有个小技巧�
 当IR收到回传的数据后，测试页面会进入到<code>Complete a Conversion</code>，如下图所示<img src="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-data-view.png" alt="" /><br/>
 在此页面中校验下IR接收到的数据和你回传的是否一致，如果一致，请挨个<code>Correct</code>，然后点击页面下方的<code>Validate</code>按钮来激活此Action Tracker。回到列表页面后可以发现此Action Tracker的<code>Test Status</code>已经变成<code>Successful</code>了。</p>
 
-<p>Action Tracker的测试到此完成。</p>
+<p>Action Tracker的测试到此完成。下面会进入到创建Ad和设置Insertion Order，此部分可先由Extrabux代为操作，但我们仍是希望Advertiser在对IR有一定了解后自己去掌控这些事情。</p>
+
+<h3>Ads</h3>
+
+<p>一个Ad创建好后Advertiser可以将它发送给一个或多个或所有的Media Partner<sup id="fnref:12"><a href="#fn:12" rel="footnote">12</a></sup>，每个Media Parnter得到的Ad url都不一样。入口页面的url也是在Ad里设置的。</p>
+
+<h3>Insertion Orders</h3>
+
+<p>An insertion order is an agreement between a Media Partner and an Advertiser that governs the relationship between the two parties. The Insertion Order contains the terms of the agreement such as payout rates, cookie duration, lead caps, action validation period, return policies, call center hours and all other terms that may be relevant to the partnership. 更多信息请参考<a href="https://help.impactradius.com/hc/en-us/articles/210895837-Insertion-Orders">Insertion-Orders</a><br/>
+设置Media Partner和Advertiser之间的协议条款。包含但不限于以下几点：返利是百分比还是固定的金额，百分比是多少，固定金额又是多少；从一个Ad click产生到最终完成交易的最长时间间隔；action的锁定期，默认就是上面说过的15天；同一个clickid产生的前几笔交易是有效(返利)的，默认是前3笔。<br/>
+Advertiser可就同一项业务与不同的Media Partner签订不同的协议内容。Advertiser将某个Insertion Order发送给特定的Media Partner，Media Partner接受后双方建立起联系。</p>
+
+<h3>全了</h3>
+
+<p>Ads和Insertion Order设置好后，整个流程就通了。<br/>
+简单回顾一下。用户在Extrabux上点一个广告(Ad)，Extrabux(或者是其他的Media Partner)知道要将用户导向到哪个Ad url，IR记录下这个Ad click event然后再将用户导向Advertiser提供的对应的入口页面，Advertiser记录下IR传入的参数，用户在Advertiser的网站上成功转化，Advertiser回传数据给IR，IR收到后根据Insertion Order计算佣金然后给到Extrabux。Extrabux再将佣金的绝大部分返还给用户。</p>
+
+<h3>线上模拟测试</h3>
+
+<p>做线上模拟测试的必要性是因为本地和线上是两个完全不同的环境，本地能跑通的程序到了线上未必也能跑通。<br/>
+Action Tracker在本地测试通过后由Advertiser部署程序到线上，然后双方各自进行线上模拟测试。线上模拟测试会省略掉Extrabux到IR的部分，直接从访问Ad url开始。对于Advertiser是转运公司的情况，还需要转运公司能模拟入库、支付、出库等动作。<br/>
+IR接收到数据后一般20分钟内就可以在<a href="https://member.impactradius.com/secure/advertiser/actions/open/pending-actions-flow.ihtml?execution=e12s1">Pending Actions</a>里看到，而在<a href="https://member.impactradius.com/secure/advertiser/Adv_Campaign_Dashboard/r11/report/viewReport.report?handle=adv_generation_foundation_campaign_dashboard">Reports</a>里看到至少需要2+小时。</p>
+
+<h6>Pending Actions</h6>
+
+<p>在action的锁定期内，Advertiser可以对其进行数据修正、Approve、Reverse等操作。对于线上模拟测试的数据，可以在Reverse中选择<code>Test Action</code>。<br/>
+如果有大量数据需要Reverse可以选择调用Web Services接口或上传数据文件到FTP服务器的方式来批量操作，详情请查看<a href="http://support.impactradius.com/display/ADVERTISER/Understanding+Batch+Reporting+of+Conversion+Returns">这里</a>。更多关于Pending Actions的文档请查看<a href="http://support.impactradius.com/display/ADVERTISER/FAQs+-+Pending+Actions">FAQs-Pending Actions</a></p>
 <div class="footnotes">
 <hr/>
 <ol>
@@ -380,6 +428,8 @@ Landing Page URL就是我们上面提到的入口页面。这里有个小技巧�
 <p>货币缩写请参考<a href="http://www.currency-iso.org/dam/downloads/lists/list_one.xml">currency-iso</a><a href="#fnref:10" rev="footnote">&#8617;</a></p></li>
 <li id="fn:11">
 <p>Batch FTP和Web Services这两种tracking method是延后回传数据。<a href="#fnref:11" rev="footnote">&#8617;</a></p></li>
+<li id="fn:12">
+<p>体会到irmpname参数的用处了吧<a href="#fnref:12" rev="footnote">&#8617;</a></p></li>
 </ol>
 </div>
 

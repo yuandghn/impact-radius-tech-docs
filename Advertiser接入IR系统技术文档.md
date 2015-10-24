@@ -37,7 +37,7 @@ Advertiser须将这两个参数[^6]保存到cookie里并设置一定的有效期
 	- `EventDate`：交易完成的时间点，如订单/运单成功支付的时间点。格式：`dd-MMM-yyyy hh:mm:ss z`，如21-Oct-2015 10:25:59 HKT[^9]
 	- `Amount`：订单/运单金额。Advertiser可根据自身业务需求决定是否剔除优惠券、积分等内容。
 	- `Currency`：可选项。货币的缩写。如果Advertiser和用户之间的交易不是以美元来结算的，请设置此属性，如人民币的货币缩写为CNY[^10]。因为IR默认是以美元来结算，设置Currency后，IR会自动根据当前汇率将Amount换算成美元。
-7. IR接收到数据后，出Reports给Advertiser和Extrabux看。数据的锁定期默认是15天(可修改)。在锁定期内，Advertiser可对数据进行修正操作，如修改和撤消；锁定期一过，意味着Advertiser认可交易数据，IR随后会将佣金转给Extrabux。
+7. IR接收到数据后，出Reports给Advertiser和Extrabux看。数据的话期默认是15天(可修改)。在锁定期内，Advertiser可对数据进行修正操作，如修改和撤消；锁定期一过，意味着Advertiser认可交易数据，IR随后会将佣金转给Extrabux。
 8. Extraubx收到佣金后再与用户进行结算。  
 
 到此，流程完毕。
@@ -126,6 +126,24 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 是错误的。正确的应该是	
   
  	  	https://api.impactradius.com/Advertisers/{AccountSid}/Conversions
+调用Web Services API成功后类似的返回信息：
+
+		<ImpactRadiusResponse>
+ 			<Status>QUEUED</Status>
+ 			<QueuedUri>/Advertisers/{AccountSid}/BatchSummaries/XysrtIBGGA</QueuedUri> 
+		</ImpactRadiusResponse>
+失败时类似的返回信息：
+
+		<ImpactRadiusResponse>
+ 			<Status>ERROR</Status>
+ 			<Message>Validation Failed</Message>
+ 			<Errors>
+  				<Error>
+   					<Field>CampaignId</Field>
+   					<Message>Invalid value xyz</Code>
+  				</Error>
+ 			</Errors>        
+		</ImpactRadiusResponse>
 
 ###Action Tracker  
 为各种不同的action定义相应的tracker。  
@@ -155,7 +173,7 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 
  		irEvent.fire();
 	</script>
-细心的同学可能注意到了，这里面回传的参数与我们在流程细节里描述的不一致，根本就没有CampaignId、ActionTrackerId、ClickId和EventDate等参数。是的，在Pixel方式里的确不用显式的传入这些参数，IR会通过其他形式自己获取到。比如，页面加载的"/js/3141/8324/irv3.js"文件里就包含了CampaignId和ActionTrackerId；ClickId在传给你的入口页面之前IR就已经以其他方式保存到自己的cookie里了，当irEvent.fire()的时候就会带过去，同时呢EventDate也有了。  
+细心的同学可能注意到了，这里面回传的参数与我们在流程细节里描述的不一致，根本就没有CampaignId、ActionTrackerId、ClickId和EventDate等参数。是的，在Pixel方式里的确不用显式的传入这些参数，IR会通过其他形式自己获取到。比如，页面加载的"/js/3141/8324/irv3.js"文件里就包含了CampaignId和ActionTrackerId；ClickId在传给你的入口页面之前IR就已经以其他方式保存到自己的cookie里了，当irEvent.fire()的时候就会带过去，同时呢，EventDate也有了。  
 
 测试流程大同小异，我们以Web Service方式为例：   
 ![web-service-test-page](http://7xnrpy.com1.z0.glb.clouddn.com/web-service-test-page.png)
@@ -165,7 +183,27 @@ Landing Page URL就是我们上面提到的入口页面。这里有个小技巧�
 当IR收到回传的数据后，测试页面会进入到`Complete a Conversion`，如下图所示![](http://7xnrpy.com1.z0.glb.clouddn.com/web-service-data-view.png)  
 在此页面中校验下IR接收到的数据和你回传的是否一致，如果一致，请挨个`Correct`，然后点击页面下方的`Validate`按钮来激活此Action Tracker。回到列表页面后可以发现此Action Tracker的`Test Status`已经变成`Successful`了。  
 
-Action Tracker的测试到此完成。
+Action Tracker的测试到此完成。下面会进入到创建Ad和设置Insertion Order，此部分可先由Extrabux代为操作，但我们仍是希望Advertiser在对IR有一定了解后自己去掌控这些事情。
+
+###Ads
+一个Ad创建好后Advertiser可以将它发送给一个或多个或所有的Media Partner[^12]，每个Media Parnter得到的Ad url都不一样。入口页面的url也是在Ad里设置的。
+
+###Insertion Orders
+An insertion order is an agreement between a Media Partner and an Advertiser that governs the relationship between the two parties. The Insertion Order contains the terms of the agreement such as payout rates, cookie duration, lead caps, action validation period, return policies, call center hours and all other terms that may be relevant to the partnership. 更多信息请参考[Insertion-Orders](https://help.impactradius.com/hc/en-us/articles/210895837-Insertion-Orders)  
+设置Media Partner和Advertiser之间的协议条款。包含但不限于以下几点：返利是百分比还是固定的金额，百分比是多少，固定金额又是多少；从一个Ad click产生到最终完成交易的最长时间间隔；action的锁定期，默认就是上面说过的15天；同一个clickid产生的前几笔交易是有效(返利)的，默认是前3笔。  
+Advertiser可就同一项业务与不同的Media Partner签订不同的协议内容。Advertiser将某个Insertion Order发送给特定的Media Partner，Media Partner接受后双方建立起联系。
+
+###全了
+Ads和Insertion Order设置好后，整个流程就通了。  
+简单回顾一下。用户在Extrabux上点一个广告(Ad)，Extrabux(或者是其他的Media Partner)知道要将用户导向到哪个Ad url，IR记录下这个Ad click event然后再将用户导向Advertiser提供的对应的入口页面，Advertiser记录下IR传入的参数，用户在Advertiser的网站上成功转化，Advertiser回传数据给IR，IR收到后根据Insertion Order计算佣金然后给到Extrabux。Extrabux再将佣金的绝大部分返还给用户。
+
+###线上模拟测试
+做线上模拟测试的必要性是因为本地和线上是两个完全不同的环境，本地能跑通的程序到了线上未必也能跑通。  
+Action Tracker在本地测试通过后由Advertiser部署程序到线上，然后双方各自进行线上模拟测试。线上模拟测试会省略掉Extrabux到IR的部分，直接从访问Ad url开始。对于Advertiser是转运公司的情况，还需要转运公司能模拟入库、支付、出库等动作。  
+IR接收到数据后一般20分钟内就可以在[Pending Actions](https://member.impactradius.com/secure/advertiser/actions/open/pending-actions-flow.ihtml?execution=e12s1)里看到，而在[Reports](https://member.impactradius.com/secure/advertiser/Adv_Campaign_Dashboard/r11/report/viewReport.report?handle=adv_generation_foundation_campaign_dashboard)里看到至少需要2+小时。
+######Pending Actions
+在action的锁定期内，Advertiser可以对其进行数据修正、Approve、Reverse等操作。对于线上模拟测试的数据，可以在Reverse中选择`Test Action`。  
+如果有大量数据需要Reverse可以选择调用Web Services接口或上传数据文件到FTP服务器的方式来批量操作，详情请查看[这里](http://support.impactradius.com/display/ADVERTISER/Understanding+Batch+Reporting+of+Conversion+Returns)。更多关于Pending Actions的文档请查看[FAQs-Pending Actions](http://support.impactradius.com/display/ADVERTISER/FAQs+-+Pending+Actions)
 
 
 [^1]:订单金额里可能包含优惠券、积分等内容，Advertiser可根据自身的业务需求来决定是否剔除它们。
@@ -179,6 +217,7 @@ Action Tracker的测试到此完成。
 [^9]:时区缩写请参考[time_zone_abbreviations](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)。如果你们系统使用的是中国标准时间，请不要使用CST来表示，因为CST可表示多个时区，而且在IR里也的确不用于表示Chinese Standard Time。请改用HKT(Hong Kong Time)。
 [^10]:货币缩写请参考[currency-iso](http://www.currency-iso.org/dam/downloads/lists/list_one.xml)
 [^11]:Batch FTP和Web Services这两种tracking method是延后回传数据。
+[^12]:体会到irmpname参数的用处了吧
 
 
 
