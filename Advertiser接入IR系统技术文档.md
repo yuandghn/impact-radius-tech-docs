@@ -190,7 +190,7 @@ Action Tracker的测试到此完成。下面会进入到创建Ad和设置Inserti
 
 ###Insertion Orders
 An insertion order is an agreement between a Media Partner and an Advertiser that governs the relationship between the two parties. The Insertion Order contains the terms of the agreement such as payout rates, cookie duration, lead caps, action validation period, return policies, call center hours and all other terms that may be relevant to the partnership. 更多信息请参考[Insertion-Orders](https://help.impactradius.com/hc/en-us/articles/210895837-Insertion-Orders)  
-设置Media Partner和Advertiser之间的协议条款。包含但不限于以下几点：返利是百分比还是固定的金额，百分比是多少，固定金额又是多少；从一个Ad click产生到最终完成交易的最长时间间隔；action的锁定期，默认就是上面说过的15天；同一个clickid产生的前几笔交易是有效(返利)的，默认是前3笔。  
+设置Media Partner和Advertiser之间的协议条款。包含但不限于以下几点：返利是百分比还是固定的金额，百分比是多少，固定金额又是多少；从一个Ad click产生到最终完成交易的最长时间间隔；action的锁定期，默认就是上面说过的15天；同一个clickid产生的前几笔交易是有效(返利)的，默认是前3笔[^13]。  
 Advertiser可就同一项业务与不同的Media Partner签订不同的协议内容。Advertiser将某个Insertion Order发送给特定的Media Partner，Media Partner接受后双方建立起联系。
 
 ###全了
@@ -218,7 +218,7 @@ IR接收到数据后一般20分钟内就可以在[Pending Actions](https://membe
 [^10]:货币缩写请参考[currency-iso](http://www.currency-iso.org/dam/downloads/lists/list_one.xml)
 [^11]:Batch FTP和Web Services这两种tracking method是延后回传数据。
 [^12]:体会到irmpname参数的用处了吧
-
+[^13]:尽管如此，Extrabux和Advertiser最好还是引导用户每次下单前都从Extrabux点过去，理想状况是一个clickid对应一笔交易。
 
 
 
