@@ -188,11 +188,11 @@ sup {
 <li>点击目标Advertiser的Ad</li>
 <li><p>Extrabux调用IR提供的此Ad的url并传入当前用户的标识信息</p>
 
-<blockquote><p>Extrabux和IR之间的交互至此结束，Advertiser无须关心以上流程。下面进入IR和Advertiser之间的交互</p></blockquote></li>
+<blockquote><p>Extrabux和IR之间的交互至此结束，Advertiser无须关心以上流程。下面进入IR和Advertiser之间的交互。</p></blockquote></li>
 <li><p>IR引导用户进入此Ad url对应的Advertiser提供的入口页面<sup id="fnref:3"><a href="#fn:3" rel="footnote">3</a></sup>，并传入此次Ad click event的惟一标识和来源标识，即clickid<sup id="fnref:4"><a href="#fn:4" rel="footnote">4</a></sup>和irmpname<sup id="fnref:5"><a href="#fn:5" rel="footnote">5</a></sup>。<br/>
 Extrabux的irmpname是<code>Extrabux Shanghai</code>.<br/>
 Advertiser须将这两个参数<sup id="fnref:6"><a href="#fn:6" rel="footnote">6</a></sup>保存到cookie里并设置一定的有效期(一般半个月即可)，因为不知道用户成功转化需要多长时间。</p></li>
-<li><p>用户成功转化后，Advertiser回传数据给IR。建议Advertiser将clickid、irmpname和订单/运单信息关联起来，方便以后查询统计;并对回传成功的记录打上标记，以便失败后重传。<br/>
+<li><p>用户成功转化后，Advertiser回传数据给IR。建议Advertiser将clickid、irmpname和订单/运单信息关联起来，方便以后查询统计；并对回传成功的记录打上标记，以便失败后重传。<br/>
 回传的数据内容主要包括：CampaignId、ActionTrackerId、ClickId、Oid、EventDate、Amount、Currency等<sup id="fnref:7"><a href="#fn:7" rel="footnote">7</a></sup>。<br/>
 以下是各个参数的说明。</p>
 
@@ -206,7 +206,7 @@ Advertiser须将这两个参数<sup id="fnref:6"><a href="#fn:6" rel="footnote">
 <li><code>Currency</code>：可选项。货币的缩写。如果Advertiser和用户之间的交易不是以美元来结算的，请设置此属性，如人民币的货币缩写为CNY<sup id="fnref:10"><a href="#fn:10" rel="footnote">10</a></sup>。因为IR默认是以美元来结算，设置Currency后，IR会自动根据当前汇率将Amount换算成美元。</li>
 </ul>
 </li>
-<li>IR接收到数据后，出Reports给Advertiser和Extrabux看。数据的话期默认是15天(可修改)。在锁定期内，Advertiser可对数据进行修正操作，如修改和撤消；锁定期一过，意味着Advertiser认可交易数据，IR随后会将佣金转给Extrabux。</li>
+<li>IR接收到数据后，出Reports给Advertiser和Extrabux看。数据的锁定期默认是15天(可修改)。在锁定期内，Advertiser可对数据进行修正、Approve、Reverse等；锁定期一过，意味着Advertiser认可交易数据，IR随后会将佣金转给Extrabux。</li>
 <li>Extraubx收到佣金后再与用户进行结算。</li>
 </ol>
 
@@ -225,7 +225,7 @@ Advertiser须将这两个参数<sup id="fnref:6"><a href="#fn:6" rel="footnote">
 更多信息请参考文档<a href="http://support.impactradius.com/display/ADVERTISER/JavaScript+Conversion+Code">JavaScript Conversion Code</a>。</p></li>
 <li><p>Batch FTP<br/>
 这是一种通过上传数据文件到IR的FTP服务器来回传数据的方式。IR接受两种格式的数据文件：XML和CSV。推荐使用可读性更强的XML格式。各个编程语言都有FTP client可以使用。<br/>
-创建此类型的Action Tracker时点击<code>Email FTP Username and Password</code>按钮， IR会把FTP服务器的用户名/密码发Advertiser的注册邮箱里。<br/>
+创建此类型的Action Tracker时点击<code>Email FTP Username and Password</code>按钮， IR会把FTP服务器的用户名/密码发到Advertiser的注册邮箱里。<br/>
 那何时触发FTP上传动作呢？以转运公司为例，一般可选择在交易状态已基本稳定的时间点进行，如包裹出库时立即上传此运单的数据，或者定时触发，如一天上传一次，这时数据文件里一般会包含多笔运单的数据。<br/>
 XML格式数据样例：</p>
 
@@ -337,7 +337,7 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 
 <p>为各种不同的action定义相应的tracker。<br/>
 创建Action Tracker请到<a href="https://member.impactradius.com/secure/advertiser/campaign/actiontracker/view-actiontracker-flow.ihtml?execution=e1s1">这里</a>。此页面会列出所有已经创建好的的Action Tracker，欲创建新的Action Tracker请点击<code>Create Action Tracker</code>按钮。<br/>
-前期在Advertiser不熟悉IR的情况下可由Extrabux协助创建Action Tracker，但我们希望后面Advertiser能够自己来掌控Action Tracker，毕竟这是IR里最经常用到的功能。</p>
+前期在Advertiser不熟悉IR的情况下可由Extrabux协助创建Action Tracker，但我们希望后面Advertiser能够自己来掌控Action Tracker，毕竟这是IR里经常用到的功能。</p>
 
 <p>下面我们重点说一下Action Tracker的测试。<code>在开始测试之前请Advertiser确保你们的开发人员已经拿到了IR系统的账号</code>。</p>
 
@@ -372,7 +372,7 @@ Removal or modification of this code will disrupt marketing activities. This cod
 <img src="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-test-page.png" alt="web-service-test-page" />
 你需要的<code>CampaignId</code>、<code>ActionTrackerId</code>、<code>ClickId</code>都有了。<br/>
 Landing Page URL就是我们上面提到的入口页面。这里有个小技巧。当技术人员在本地完成所有的开发工作后，可直接在测试页面对本地项目进行测试，无须部署到线上之后再测，这样可以避免因为一些小问题而频繁的上线。请把Landing Page URL中的域名改成你本地的地址，如127.0.0.1之类的，irmpname参数的值可直接替换成<code>Extrabux Shanghai</code>，clickid参数的值IR会自动替换成上面的Test Key。点击<code>Start Test in New Window</code>按钮后启动测试，页面里随之会出现一个loading条，IR在等待你回传数据给它。<br/>
-为了方便开发理解，我使用了一个Chrome浏览器的Postman插件来回传数据，截图在<a href="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-back-data-to-ir.png">这里</a>。<br/>
+为了方便开发理解，我使用了Chrome浏览器的Postman插件来回传数据，截图在<a href="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-back-data-to-ir.png">这里</a>。<br/>
 当IR收到回传的数据后，测试页面会进入到<code>Complete a Conversion</code>，如下图所示<img src="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-data-view.png" alt="" /><br/>
 在此页面中校验下IR接收到的数据和你回传的是否一致，如果一致，请挨个<code>Correct</code>，然后点击页面下方的<code>Validate</code>按钮来激活此Action Tracker。回到列表页面后可以发现此Action Tracker的<code>Test Status</code>已经变成<code>Successful</code>了。</p>
 
@@ -413,7 +413,7 @@ IR接收到数据后一般20分钟内就可以在<a href="https://member.impactr
 <li id="fn:3">
 <p>这里虽然说的是入口页面，但其实只要有个后台就行了，不需要真的有对应的页面。因为它只要能接收click和irmpname参数，然后写到cookie里，然后直接302重定向到首页或其他页面就行了。而且强烈建议在这个后台做302重定向，不然一长串的参数在地址栏里确实不好看。它的职责就是接收IR传入的参数，参数处理完后就重定向到想去的页面。<a href="#fnref:3" rev="footnote">&#8617;</a></p></li>
 <li id="fn:4">
-<p>每次Ad click换会产生一个惟一的clickid，它是字母、数字和一些符号的组合。<a href="#fnref:4" rev="footnote">&#8617;</a></p></li>
+<p>每次Ad click都会产生一个惟一的clickid，它是字母、数字和一些符号的组合。<a href="#fnref:4" rev="footnote">&#8617;</a></p></li>
 <li id="fn:5">
 <p>Impact Radius Media Partner Name<a href="#fnref:5" rev="footnote">&#8617;</a></p></li>
 <li id="fn:6">
