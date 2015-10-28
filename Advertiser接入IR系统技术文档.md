@@ -120,7 +120,7 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 
 - Web Services  
 这里的Web Services不是通常意义上的Web Service，其实它就是个HTTP REST API。各个编程语言都有HTTP Client可以使用。  
-请详细阅读文档[Web Services Tracking](http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking)中关于`authenticate`的内容。  
+请详细阅读文档[Web Services Tracking](http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking)中关于`authenticate`的内容。AccountSid和authentication token可以从[这里](https://member.impactradius.com/secure/advertiser/accountSettings/techintegration/adv-wsapi-flow.ihtml?execution=e2s1)获得。  
 更多信息请参考文档：[Web Services Tracking](http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking)、[API-Conversions](http://dev.impactradius.com/display/api/Conversions)    
 `纠错`：在文档[Web Services Tracking](http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking)中Conversions的api接口    
 		
@@ -200,12 +200,20 @@ Ads和Insertion Order设置好后，整个流程就通了。
 简单回顾一下。用户在Extrabux上点一个广告(Ad)，Extrabux(或者是其他的Media Partner)知道要将用户导向到哪个Ad url，IR记录下这个Ad click event然后再将用户导向Advertiser提供的对应的入口页面，Advertiser记录下IR传入的参数，用户在Advertiser的网站上成功转化，Advertiser回传数据给IR，IR收到后根据Insertion Order计算佣金然后给到Extrabux。Extrabux再将佣金的绝大部分返还给用户。
 
 ###线上模拟测试
+这里的线上指的是`生产环境`。  
 做线上模拟测试的必要性是因为本地和线上是两个完全不同的环境，本地能跑通的程序到了线上未必也能跑通。  
 Action Tracker在本地测试通过后由Advertiser部署程序到线上，然后双方各自进行线上模拟测试。线上模拟测试会省略掉Extrabux到IR的部分，直接从访问Ad url开始。对于Advertiser是转运公司的情况，还需要转运公司能模拟入库、支付、出库等动作。  
 IR接收到数据后一般20分钟内就可以在[Pending Actions](https://member.impactradius.com/secure/advertiser/actions/open/pending-actions-flow.ihtml?execution=e12s1)里看到，而在[Reports](https://member.impactradius.com/secure/advertiser/Adv_Campaign_Dashboard/r11/report/viewReport.report?handle=adv_generation_foundation_campaign_dashboard)里看到至少需要2+小时。
 ######Pending Actions
 在action的锁定期内，Advertiser可以对其进行数据修正、Approve、Reverse等操作。对于线上模拟测试的数据，可以在Reverse中选择`Test Action`。  
 如果有大量数据需要Reverse可以选择调用Web Services接口或上传数据文件到FTP服务器的方式来批量操作，详情请查看[这里](http://support.impactradius.com/display/ADVERTISER/Understanding+Batch+Reporting+of+Conversion+Returns)。更多关于Pending Actions的文档请查看[FAQs-Pending Actions](http://support.impactradius.com/display/ADVERTISER/FAQs+-+Pending+Actions)
+
+###小问题集锦
+Advertisers在实践中会遇到各种各样的小问题，在文档上方的流程细节中无法一一覆盖到，所以我们以问题集锦的方式列出。  
+1. 在对Action Tracker测试时，数据已经回传给了IR，但是在Action Trackers列表页面中对应的Test Status却是`System Invalidated`。  
+原因：可能是因为你回传的ActionTrackerId和当前测试的action tracker的id不一致造成的。  
+ 
+ 
 
 
 [^1]:订单金额里可能包含优惠券、积分等内容，Advertiser可根据自身的业务需求来决定是否剔除它们。
@@ -221,7 +229,6 @@ IR接收到数据后一般20分钟内就可以在[Pending Actions](https://membe
 [^11]:Batch FTP和Web Services这两种tracking method是延后回传数据。
 [^12]:体会到irmpname参数的用处了吧
 [^13]:尽管如此，Extrabux和Advertiser最好还是引导用户每次下单前都从Extrabux点过去，理想状况是一个clickid对应一笔交易。
-
 
 
 

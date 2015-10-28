@@ -299,7 +299,7 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 更多信息请参考文档：<a href="http://support.impactradius.com/display/ADVERTISER/Batch+FTP+Tracking+Method">Batch FTP Tracking Method</a>、<a href="http://support.impactradius.com/display/ADVERTISER/Guide+-+Tracking+Integration#Guide-TrackingIntegration-AdvertiserFTPConversionReportingMethodforOnlineActions">Advertiser FTP Conversion Reporting Method</a></p></li>
 <li><p>Web Services<br/>
 这里的Web Services不是通常意义上的Web Service，其实它就是个HTTP REST API。各个编程语言都有HTTP Client可以使用。<br/>
-请详细阅读文档<a href="http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking">Web Services Tracking</a>中关于<code>authenticate</code>的内容。<br/>
+请详细阅读文档<a href="http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking">Web Services Tracking</a>中关于<code>authenticate</code>的内容。AccountSid和authentication token可以从<a href="https://member.impactradius.com/secure/advertiser/accountSettings/techintegration/adv-wsapi-flow.ihtml?execution=e2s1">这里</a>获得。<br/>
 更多信息请参考文档：<a href="http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking">Web Services Tracking</a>、<a href="http://dev.impactradius.com/display/api/Conversions">API-Conversions</a>  <br/>
 <code>纠错</code>：在文档<a href="http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking">Web Services Tracking</a>中Conversions的api接口</p>
 
@@ -397,7 +397,8 @@ Advertiser可就同一项业务与不同的Media Partner签订不同的协议内
 
 <h3>线上模拟测试</h3>
 
-<p>做线上模拟测试的必要性是因为本地和线上是两个完全不同的环境，本地能跑通的程序到了线上未必也能跑通。<br/>
+<p>这里的线上指的是<code>生产环境</code>。<br/>
+做线上模拟测试的必要性是因为本地和线上是两个完全不同的环境，本地能跑通的程序到了线上未必也能跑通。<br/>
 Action Tracker在本地测试通过后由Advertiser部署程序到线上，然后双方各自进行线上模拟测试。线上模拟测试会省略掉Extrabux到IR的部分，直接从访问Ad url开始。对于Advertiser是转运公司的情况，还需要转运公司能模拟入库、支付、出库等动作。<br/>
 IR接收到数据后一般20分钟内就可以在<a href="https://member.impactradius.com/secure/advertiser/actions/open/pending-actions-flow.ihtml?execution=e12s1">Pending Actions</a>里看到，而在<a href="https://member.impactradius.com/secure/advertiser/Adv_Campaign_Dashboard/r11/report/viewReport.report?handle=adv_generation_foundation_campaign_dashboard">Reports</a>里看到至少需要2+小时。</p>
 
@@ -405,6 +406,12 @@ IR接收到数据后一般20分钟内就可以在<a href="https://member.impactr
 
 <p>在action的锁定期内，Advertiser可以对其进行数据修正、Approve、Reverse等操作。对于线上模拟测试的数据，可以在Reverse中选择<code>Test Action</code>。<br/>
 如果有大量数据需要Reverse可以选择调用Web Services接口或上传数据文件到FTP服务器的方式来批量操作，详情请查看<a href="http://support.impactradius.com/display/ADVERTISER/Understanding+Batch+Reporting+of+Conversion+Returns">这里</a>。更多关于Pending Actions的文档请查看<a href="http://support.impactradius.com/display/ADVERTISER/FAQs+-+Pending+Actions">FAQs-Pending Actions</a></p>
+
+<h3>小问题集锦</h3>
+
+<p>Advertisers在实践中会遇到各种各样的小问题，在文档上方的流程细节中无法一一覆盖到，所以我们以问题集锦的方式列出。<br/>
+1. 在对Action Tracker测试时，数据已经回传给了IR，但是在Action Trackers列表页面中对应的Test Status却是<code>System Invalidated</code>。<br/>
+原因：可能是因为你回传的ActionTrackerId和当前测试的action tracker的id不一致造成的。</p>
 <div class="footnotes">
 <hr/>
 <ol>
