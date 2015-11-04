@@ -156,7 +156,7 @@ sup {
 
 </head>
 <body>
-<p><code>文档处于不断地更新和完善过程中，我们会把各个Advertiser接入过程中遇到的各种问题记录下来并分享给所有的Advertiser。</code></p>
+<p><code>文档处于不断地更新和完善的过程中，我们会把各个Advertiser接入过程中遇到的各种问题记录下来并分享给所有的Advertiser。</code></p>
 
 <h3>角色</h3>
 
@@ -192,9 +192,9 @@ sup {
 
 <blockquote><p>Extrabux和IR之间的交互至此结束，Advertiser无须关心以上流程。下面进入IR和Advertiser之间的交互。</p></blockquote></li>
 <li><p>IR引导用户进入此Ad url对应的Advertiser提供的入口页面<sup id="fnref:3"><a href="#fn:3" rel="footnote">3</a></sup>，并传入此次Ad click event的惟一标识和来源标识，即clickid<sup id="fnref:4"><a href="#fn:4" rel="footnote">4</a></sup>和irmpname<sup id="fnref:5"><a href="#fn:5" rel="footnote">5</a></sup>。<br/>
-Extrabux的irmpname是<code>Extrabux Shanghai</code>.<br/>
+Extrabux的irmpname是<code>Extrabux Shanghai</code>。在后台对irmpname做equals的时候请注意，<code>Extrabux Shanghai</code>中间是有个空格的，虽然在跳转的过程中会被浏览器转义成<code>+</code>号，但你们的框架在把它从request中解析出来后应该仍然是空格。<br/>
 Advertiser须将这两个参数<sup id="fnref:6"><a href="#fn:6" rel="footnote">6</a></sup>保存到cookie里并设置一定的有效期(一般半个月即可)，因为不知道用户成功转化需要多长时间。</p></li>
-<li><p>用户成功转化后，Advertiser回传数据给IR。建议Advertiser将clickid、irmpname和订单/运单信息关联起来，方便以后查询统计；并对回传成功的记录打上标记，以便失败后重传。<br/>
+<li><p>用户成功转化后，Advertiser回传数据给IR。建议Advertiser将clickid、irmpname和订单/运单信息关联起来，方便以后自己做查询统计；并对回传成功的记录打上标记，以便失败后重传。<br/>
 回传的数据内容主要包括：CampaignId、ActionTrackerId、ClickId、Oid、EventDate、Amount、Currency等<sup id="fnref:7"><a href="#fn:7" rel="footnote">7</a></sup>。<br/>
 以下是各个参数的说明。</p>
 
@@ -203,7 +203,7 @@ Advertiser须将这两个参数<sup id="fnref:6"><a href="#fn:6" rel="footnote">
 <li><code>ActionTrackerId</code>：固定值，每个ActionTracker的id都不一样，在对ActionTracker做测试时就可以看到。</li>
 <li><code>ClickId</code>：第4步中IR传入的参数</li>
 <li><code>Oid</code>：即Order Id，能惟一标识此次交易的id，建议直接使用订单/运单id，一来方便用户在Extrabux中查看<sup id="fnref:8"><a href="#fn:8" rel="footnote">8</a></sup>，二来便于以后数据有问题时对账。</li>
-<li><code>EventDate</code>：交易完成的时间点，如订单/运单成功支付的时间点。格式：<code>dd-MMM-yyyy hh:mm:ss z</code>，如21-Oct-2015 10:25:59 HKT<sup id="fnref:9"><a href="#fn:9" rel="footnote">9</a></sup></li>
+<li><code>EventDate</code>：交易完成的时间点，如订单/运单成功支付的时间点。格式：<code>dd-MMM-yyyy hh:mm:ss z</code>，如<code>21-Oct-2015 18:25:59 HKT</code><sup id="fnref:9"><a href="#fn:9" rel="footnote">9</a></sup>。小时请使用24小时制。</li>
 <li><code>Amount</code>：订单/运单金额。Advertiser可根据自身业务需求决定是否剔除优惠券、积分等内容。</li>
 <li><code>Currency</code>：可选项。货币的缩写。如果Advertiser和用户之间的交易不是以美元来结算的，请设置此属性，如人民币的货币缩写为CNY<sup id="fnref:10"><a href="#fn:10" rel="footnote">10</a></sup>。因为IR默认是以美元来结算，设置Currency后，IR会自动根据当前汇率将Amount换算成美元。</li>
 </ul>
@@ -374,9 +374,13 @@ Removal or modification of this code will disrupt marketing activities. This cod
 <img src="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-test-page.png" alt="web-service-test-page" />
 你需要的<code>CampaignId</code>、<code>ActionTrackerId</code>、<code>ClickId</code>都有了。<br/>
 Landing Page URL就是我们上面提到的入口页面。这里有个小技巧。当技术人员在本地完成所有的开发工作后，可直接在测试页面对本地项目进行测试，无须部署到线上之后再测，这样可以避免因为一些小问题而频繁的上线。请把Landing Page URL中的域名改成你本地的地址，如127.0.0.1之类的，irmpname参数的值可直接替换成<code>Extrabux Shanghai</code>，clickid参数的值IR会自动替换成上面的Test Key。点击<code>Start Test in New Window</code>按钮后启动测试，页面里随之会出现一个loading条，IR在等待你回传数据给它。<br/>
-为了方便开发理解，我使用了Chrome浏览器的Postman插件来回传数据，截图在<a href="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-back-data-to-ir.png">这里</a>。<br/>
+<code>注意事项</code>：当你使用FTP或Web Service的方式来回传数据时，因为EventDate是显式设置的，不像在Pixel方式里是由IR隐式获得的，所以要特别注意它的值。EventDate的限制条件：<code>必须是在Click Date之后且不能是一个未来的时间</code>。Click Date是IR产生clickid的那个时间点，也就是你进入到上图所示的页面的那个时间点。假设这个时间点大约是"19-Oct-2015 12:36:30 HKT"，回传动作发生的时间点大约是"19-Oct-2015 12:42:09 HKT"，那在你回传的数据里EventDate的值必须在这两个时间点之间。</p>
+
+<p>为了方便开发理解，我使用了Chrome浏览器的Postman插件来回传数据，截图在<a href="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-back-data-to-ir.png">这里</a>。<br/>
 当IR收到回传的数据后，测试页面会进入到<code>Complete a Conversion</code>，如下图所示<img src="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-data-view.png" alt="" /><br/>
-在此页面中校验下IR接收到的数据和你回传的是否一致，如果一致，请挨个<code>Correct</code>，然后点击页面下方的<code>Validate</code>按钮来激活此Action Tracker。回到列表页面后可以发现此Action Tracker的<code>Test Status</code>已经变成<code>Successful</code>了。</p>
+在此页面中校验下IR接收到的数据和你回传的是否一致，如果一致，请挨个<code>Correct</code>，然后点击页面下方的<code>Validate</code>(也有可能是<code>Activate Action Tracker</code>)按钮来激活此Action Tracker。回到列表页面后可以发现此Action Tracker的<code>Test Status</code>已经变成<code>Successful</code>了。</p>
+
+<h4><code>请一定要记得激活Action Tracker，不然无法进行后续的流程</code></h4>
 
 <p>Action Tracker的测试到此完成。下面会进入到创建Ad和设置Insertion Order，此部分可先由Extrabux代为操作，但我们仍是希望Advertiser在对IR有一定了解后自己去掌控这些事情。</p>
 
@@ -398,9 +402,16 @@ Advertiser可就同一项业务与不同的Media Partner签订不同的协议内
 <h3>线上模拟测试</h3>
 
 <p>这里的线上指的是<code>生产环境</code>。<br/>
-做线上模拟测试的必要性是因为本地和线上是两个完全不同的环境，本地能跑通的程序到了线上未必也能跑通。<br/>
-Action Tracker在本地测试通过后由Advertiser部署程序到线上，然后双方各自进行线上模拟测试。线上模拟测试会省略掉Extrabux到IR的部分，直接从访问Ad url开始。对于Advertiser是转运公司的情况，还需要转运公司能模拟入库、支付、出库等动作。<br/>
+做线上模拟测试的必要性是因为本地和线上是两个完全不同的环境，本地能跑通的程序到了线上未必也能跑通，如果中间哪个环节存在问题，那么提前暴露出来并解决掉要比正式提供给用户使用后再回来修复所带来的影响要小的多。做线上模拟测试的困难程度对各个Advertiser来说可能不一样，但这个步骤不能省。  <br/>
+Action Tracker在本地测试通过后由Advertiser部署程序到线上，Angie将对应的Ad url给到Advertiser的技术人员，然后双方可各自进行线上模拟测试。线上模拟测试会省略掉Extrabux到IR的部分，直接从访问Ad url开始。对于Advertiser是转运公司的情况，还需要转运公司能模拟入库、支付、出库等动作。<br/>
 IR接收到数据后一般20分钟内就可以在<a href="https://member.impactradius.com/secure/advertiser/actions/open/pending-actions-flow.ihtml?execution=e12s1">Pending Actions</a>里看到，而在<a href="https://member.impactradius.com/secure/advertiser/Adv_Campaign_Dashboard/r11/report/viewReport.report?handle=adv_generation_foundation_campaign_dashboard">Reports</a>里看到至少需要2+小时。</p>
+
+<h6><code>注意事项</code></h6>
+
+<p>在做线上模拟测试前，请Angie和Advertiser的技术人员再三确认以下几点：<br/>
+1. Action Tracker是否已Validated<br/>
+2. Ad的landing page是否设置正确<br/>
+3. Angie将Ad url给到Advertiser的技术人员</p>
 
 <h6>Pending Actions</h6>
 
@@ -411,7 +422,9 @@ IR接收到数据后一般20分钟内就可以在<a href="https://member.impactr
 
 <p>Advertisers在实践中会遇到各种各样的小问题，在文档上方的流程细节中无法一一覆盖到，所以我们以问题集锦的方式列出。<br/>
 1. 在对Action Tracker测试时，数据已经回传给了IR，但是在Action Trackers列表页面中对应的Test Status却是<code>System Invalidated</code>。<br/>
-原因：可能是因为你回传的ActionTrackerId和当前测试的action tracker的id不一致造成的。</p>
+原因：可能是因为你回传的ActionTrackerId和当前测试的action tracker的id不一致造成的。 <br/>
+2. 在做线上模拟测试时，数据明明已经回传给了IR，过了一段时间后却仍然在Pending Actions里看不到。<br/>
+原因：极有可能是EventDate的问题。这里我们再重申一下EventDate的限制条件，它<code>必须是在Click Date之后且不能是一个未来的时间</code>。Click Date是IR产生clickid的那个时间点，正常情况下EventDate肯定是在Click Date之后的，但是怕就怕在对EventDate做格式化的时候格错。格式化字符串<code>dd-MMM-yyyy hh:mm:ss z</code>是一个整体，不能先把EventDate格式化成<code>dd-MMM-yyyy hh:mm:ss</code>后再加上所在的timezone的缩写。如果你使用的编程语言本身(如C#，但C#有第三方库可以做到)不支持格式化出包含timezone缩写的形式，那折衷方案是先把EventDate格式化成UTC时间的字符串然后再拼接上<code>GMT</code>(注意GMT前有个空格)来表示使用的时区是GMT。</p>
 <div class="footnotes">
 <hr/>
 <ol>

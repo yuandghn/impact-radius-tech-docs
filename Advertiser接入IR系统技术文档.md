@@ -1,4 +1,4 @@
-`文档处于不断地更新和完善过程中，我们会把各个Advertiser接入过程中遇到的各种问题记录下来并分享给所有的Advertiser。`
+`文档处于不断地更新和完善的过程中，我们会把各个Advertiser接入过程中遇到的各种问题记录下来并分享给所有的Advertiser。`
 
 ###角色
 [Extrabux](http://www.extrabux.com/)是Media Partner，电商网站/转运公司是Advertiser，[Impact Radius](http://www.impactradius.com/)(以下简称IR)是广告联盟。Extrabux和Advertiser通过IR系统联系在一起。
@@ -26,17 +26,17 @@ IR在Extrabux和Advertiser中间起到桥梁的作用。
 Extrabux和IR之间的交互至此结束，Advertiser无须关心以上流程。下面进入IR和Advertiser之间的交互。
 
 4. IR引导用户进入此Ad url对应的Advertiser提供的入口页面[^3]，并传入此次Ad click event的惟一标识和来源标识，即clickid[^4]和irmpname[^5]。  
-Extrabux的irmpname是`Extrabux Shanghai`.  
+Extrabux的irmpname是`Extrabux Shanghai`。在后台对irmpname做equals的时候请注意，`Extrabux Shanghai`中间是有个空格的，虽然在跳转的过程中会被浏览器转义成`+`号，但你们的框架在把它从request中解析出来后应该仍然是空格。  
 Advertiser须将这两个参数[^6]保存到cookie里并设置一定的有效期(一般半个月即可)，因为不知道用户成功转化需要多长时间。
 
-5. 用户成功转化后，Advertiser回传数据给IR。建议Advertiser将clickid、irmpname和订单/运单信息关联起来，方便以后查询统计；并对回传成功的记录打上标记，以便失败后重传。  
+5. 用户成功转化后，Advertiser回传数据给IR。建议Advertiser将clickid、irmpname和订单/运单信息关联起来，方便以后自己做查询统计；并对回传成功的记录打上标记，以便失败后重传。  
 回传的数据内容主要包括：CampaignId、ActionTrackerId、ClickId、Oid、EventDate、Amount、Currency等[^7]。  
 以下是各个参数的说明。  
 	- `CampaignId`：固定值，每个ActionTracker均使用相同的CampaignId，在对ActionTracker做测试时就可以看到。
 	- `ActionTrackerId`：固定值，每个ActionTracker的id都不一样，在对ActionTracker做测试时就可以看到。
 	- `ClickId`：第4步中IR传入的参数
 	- `Oid`：即Order Id，能惟一标识此次交易的id，建议直接使用订单/运单id，一来方便用户在Extrabux中查看[^8]，二来便于以后数据有问题时对账。
-	- `EventDate`：交易完成的时间点，如订单/运单成功支付的时间点。格式：`dd-MMM-yyyy hh:mm:ss z`，如21-Oct-2015 10:25:59 HKT[^9]
+	- `EventDate`：交易完成的时间点，如订单/运单成功支付的时间点。格式：`dd-MMM-yyyy hh:mm:ss z`，如`21-Oct-2015 18:25:59 HKT`[^9]。小时请使用24小时制。
 	- `Amount`：订单/运单金额。Advertiser可根据自身业务需求决定是否剔除优惠券、积分等内容。
 	- `Currency`：可选项。货币的缩写。如果Advertiser和用户之间的交易不是以美元来结算的，请设置此属性，如人民币的货币缩写为CNY[^10]。因为IR默认是以美元来结算，设置Currency后，IR会自动根据当前汇率将Amount换算成美元。
 7. IR接收到数据后，出Reports给Advertiser和Extrabux看。数据的锁定期默认是15天(可修改)。在锁定期内，Advertiser可对数据进行修正、Approve、Reverse等；锁定期一过，意味着Advertiser认可交易数据，IR随后会将佣金转给Extrabux。
@@ -181,9 +181,13 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 ![web-service-test-page](http://7xnrpy.com1.z0.glb.clouddn.com/web-service-test-page.png)
 你需要的`CampaignId`、`ActionTrackerId`、`ClickId`都有了。  
 Landing Page URL就是我们上面提到的入口页面。这里有个小技巧。当技术人员在本地完成所有的开发工作后，可直接在测试页面对本地项目进行测试，无须部署到线上之后再测，这样可以避免因为一些小问题而频繁的上线。请把Landing Page URL中的域名改成你本地的地址，如127.0.0.1之类的，irmpname参数的值可直接替换成`Extrabux Shanghai`，clickid参数的值IR会自动替换成上面的Test Key。点击`Start Test in New Window`按钮后启动测试，页面里随之会出现一个loading条，IR在等待你回传数据给它。  
+`注意事项`：当你使用FTP或Web Service的方式来回传数据时，因为EventDate是显式设置的，不像在Pixel方式里是由IR隐式获得的，所以要特别注意它的值。EventDate的限制条件：`必须是在Click Date之后且不能是一个未来的时间`。Click Date是IR产生clickid的那个时间点，也就是你进入到上图所示的页面的那个时间点。假设这个时间点大约是"19-Oct-2015 12:36:30 HKT"，回传动作发生的时间点大约是"19-Oct-2015 12:42:09 HKT"，那在你回传的数据里EventDate的值必须在这两个时间点之间。  
+
 为了方便开发理解，我使用了Chrome浏览器的Postman插件来回传数据，截图在[这里](http://7xnrpy.com1.z0.glb.clouddn.com/web-service-back-data-to-ir.png)。  
 当IR收到回传的数据后，测试页面会进入到`Complete a Conversion`，如下图所示![](http://7xnrpy.com1.z0.glb.clouddn.com/web-service-data-view.png)  
-在此页面中校验下IR接收到的数据和你回传的是否一致，如果一致，请挨个`Correct`，然后点击页面下方的`Validate`按钮来激活此Action Tracker。回到列表页面后可以发现此Action Tracker的`Test Status`已经变成`Successful`了。  
+在此页面中校验下IR接收到的数据和你回传的是否一致，如果一致，请挨个`Correct`，然后点击页面下方的`Validate`(也有可能是`Activate Action Tracker`)按钮来激活此Action Tracker。回到列表页面后可以发现此Action Tracker的`Test Status`已经变成`Successful`了。  
+
+####`请一定要记得激活Action Tracker，不然无法进行后续的流程`
 
 Action Tracker的测试到此完成。下面会进入到创建Ad和设置Insertion Order，此部分可先由Extrabux代为操作，但我们仍是希望Advertiser在对IR有一定了解后自己去掌控这些事情。
 
@@ -201,9 +205,15 @@ Ads和Insertion Order设置好后，整个流程就通了。
 
 ###线上模拟测试
 这里的线上指的是`生产环境`。  
-做线上模拟测试的必要性是因为本地和线上是两个完全不同的环境，本地能跑通的程序到了线上未必也能跑通。  
-Action Tracker在本地测试通过后由Advertiser部署程序到线上，然后双方各自进行线上模拟测试。线上模拟测试会省略掉Extrabux到IR的部分，直接从访问Ad url开始。对于Advertiser是转运公司的情况，还需要转运公司能模拟入库、支付、出库等动作。  
-IR接收到数据后一般20分钟内就可以在[Pending Actions](https://member.impactradius.com/secure/advertiser/actions/open/pending-actions-flow.ihtml?execution=e12s1)里看到，而在[Reports](https://member.impactradius.com/secure/advertiser/Adv_Campaign_Dashboard/r11/report/viewReport.report?handle=adv_generation_foundation_campaign_dashboard)里看到至少需要2+小时。
+做线上模拟测试的必要性是因为本地和线上是两个完全不同的环境，本地能跑通的程序到了线上未必也能跑通，如果中间哪个环节存在问题，那么提前暴露出来并解决掉要比正式提供给用户使用后再回来修复所带来的影响要小的多。做线上模拟测试的困难程度对各个Advertiser来说可能不一样，但这个步骤不能省。    
+Action Tracker在本地测试通过后由Advertiser部署程序到线上，Angie将对应的Ad url给到Advertiser的技术人员，然后双方可各自进行线上模拟测试。线上模拟测试会省略掉Extrabux到IR的部分，直接从访问Ad url开始。对于Advertiser是转运公司的情况，还需要转运公司能模拟入库、支付、出库等动作。  
+IR接收到数据后一般20分钟内就可以在[Pending Actions](https://member.impactradius.com/secure/advertiser/actions/open/pending-actions-flow.ihtml?execution=e12s1)里看到，而在[Reports](https://member.impactradius.com/secure/advertiser/Adv_Campaign_Dashboard/r11/report/viewReport.report?handle=adv_generation_foundation_campaign_dashboard)里看到至少需要2+小时。  
+######`注意事项`
+在做线上模拟测试前，请Angie和Advertiser的技术人员再三确认以下几点：  
+1. Action Tracker是否已Validated  
+2. Ad的landing page是否设置正确  
+3. Angie将Ad url给到Advertiser的技术人员
+
 ######Pending Actions
 在action的锁定期内，Advertiser可以对其进行数据修正、Approve、Reverse等操作。对于线上模拟测试的数据，可以在Reverse中选择`Test Action`。  
 如果有大量数据需要Reverse可以选择调用Web Services接口或上传数据文件到FTP服务器的方式来批量操作，详情请查看[这里](http://support.impactradius.com/display/ADVERTISER/Understanding+Batch+Reporting+of+Conversion+Returns)。更多关于Pending Actions的文档请查看[FAQs-Pending Actions](http://support.impactradius.com/display/ADVERTISER/FAQs+-+Pending+Actions)
@@ -211,8 +221,9 @@ IR接收到数据后一般20分钟内就可以在[Pending Actions](https://membe
 ###小问题集锦
 Advertisers在实践中会遇到各种各样的小问题，在文档上方的流程细节中无法一一覆盖到，所以我们以问题集锦的方式列出。  
 1. 在对Action Tracker测试时，数据已经回传给了IR，但是在Action Trackers列表页面中对应的Test Status却是`System Invalidated`。  
-原因：可能是因为你回传的ActionTrackerId和当前测试的action tracker的id不一致造成的。  
- 
+原因：可能是因为你回传的ActionTrackerId和当前测试的action tracker的id不一致造成的。   
+2. 在做线上模拟测试时，数据明明已经回传给了IR，过了一段时间后却仍然在Pending Actions里看不到。  
+原因：极有可能是EventDate的问题。这里我们再重申一下EventDate的限制条件，它`必须是在Click Date之后且不能是一个未来的时间`。Click Date是IR产生clickid的那个时间点，正常情况下EventDate肯定是在Click Date之后的，但是怕就怕在对EventDate做格式化的时候格错。格式化字符串`dd-MMM-yyyy hh:mm:ss z`是一个整体，不能先把EventDate格式化成`dd-MMM-yyyy hh:mm:ss`后再加上所在的timezone的缩写。如果你使用的编程语言本身(如C#，但C#有第三方库可以做到)不支持格式化出包含timezone缩写的形式，那折衷方案是先把EventDate格式化成UTC时间的字符串然后再拼接上` GMT`(注意GMT前有个空格)来表示使用的时区是GMT。
  
 
 
