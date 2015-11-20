@@ -36,7 +36,7 @@ Advertiser须将这两个参数[^6]保存到cookie里并设置一定的有效期
 	- `ActionTrackerId`：固定值，每个ActionTracker的id都不一样，在对ActionTracker做测试时就可以看到。
 	- `ClickId`：第4步中IR传入的参数
 	- `Oid`：即Order Id，能惟一标识此次交易的id，建议直接使用订单/运单id，一来方便用户在Extrabux中查看[^8]，二来便于以后数据有问题时对账。
-	- `EventDate`：交易完成的时间点，如订单/运单成功支付的时间点。格式：`dd-MMM-yyyy hh:mm:ss z`，如`21-Oct-2015 18:25:59 HKT`[^9]。小时请使用24小时制。
+	- `EventDate`：交易完成的时间点，如订单/运单成功支付的时间点。格式：`dd-MMM-yyyy hh:mm:ss z`，如`21-Oct-2015 18:25:59 HKT`[^9]。小时请使用`24小时制`，因为在有些编程语言中`mm`表示的是12小时制，而`MM`表示的却是24小时制。此外，`z`在不同的编程语言中代表的意思也可能不一样，请换成你所使用的编程语言中能格式化成三个字母的用以代表时区的标识。
 	- `Amount`：订单/运单金额。Advertiser可根据自身业务需求决定是否剔除优惠券、积分等内容。
 	- `Currency`：可选项。货币的缩写。如果Advertiser和用户之间的交易不是以美元来结算的，请设置此属性，如人民币的货币缩写为CNY[^10]。因为IR默认是以美元来结算，设置Currency后，IR会自动根据当前汇率将Amount换算成美元。
 7. IR接收到数据后，出Reports给Advertiser和Extrabux看。数据的锁定期默认是15天(可修改)。在锁定期内，Advertiser可对数据进行修正、Approve、Reverse等；锁定期一过，意味着Advertiser认可交易数据，IR随后会将佣金转给Extrabux。
@@ -223,8 +223,8 @@ Advertisers在实践中会遇到各种各样的小问题，在文档上方的流
 1. 在对Action Tracker测试时，数据已经回传给了IR，但是在Action Trackers列表页面中对应的Test Status却是`System Invalidated`。  
 原因：可能是因为你回传的ActionTrackerId和当前测试的action tracker的id不一致造成的。   
 2. 在做线上模拟测试时，数据明明已经回传给了IR，过了一段时间后却仍然在Pending Actions里看不到。  
-原因：极有可能是EventDate的问题。这里我们再重申一下EventDate的限制条件，它`必须是在Click Date之后且不能是一个未来的时间`。Click Date是IR产生clickid的那个时间点，正常情况下EventDate肯定是在Click Date之后的，但是怕就怕在对EventDate做格式化的时候格错。格式化字符串`dd-MMM-yyyy hh:mm:ss z`是一个整体，不能先把EventDate格式化成`dd-MMM-yyyy hh:mm:ss`后再加上所在的timezone的缩写。如果你使用的编程语言本身(如C#，但C#有第三方库可以做到)不支持格式化出包含timezone缩写的形式，那折衷方案是先把EventDate格式化成UTC时间的字符串然后再拼接上` GMT`(注意GMT前有个空格)来表示使用的时区是GMT。
- 
+原因：极有可能是EventDate的问题。这里我们再重申一下EventDate的限制条件，它`必须是在Click Date之后且不能是一个未来的时间`。Click Date是IR产生clickid的那个时间点，正常情况下EventDate肯定是在Click Date之后的，但是怕就怕在对EventDate做格式化的时候格错。格式化字符串`dd-MMM-yyyy hh:mm:ss z`是一个整体，不能先把EventDate格式化成`dd-MMM-yyyy hh:mm:ss`后再加上所在的timezone的缩写。如果你使用的编程语言本身(如C#，但C#有第三方库可以做到)不支持格式化出包含timezone缩写的形式，那折衷方案是先把EventDate格式化成UTC时间的字符串然后再拼接上` GMT`(注意GMT前有个空格)来表示使用的时区是GMT。  
+3. `Amount`表示的是订单/运单金额，请Advertiser不要误认为它是你们给到Extrabux的返点金额(或者叫佣金)，返点金额(佣金)应该给Extrabux多少是由IR来计算的，Advertiser无须关心。
 
 
 [^1]:订单金额里可能包含优惠券、积分等内容，Advertiser可根据自身的业务需求来决定是否剔除它们。

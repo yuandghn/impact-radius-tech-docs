@@ -203,7 +203,7 @@ Advertiser须将这两个参数<sup id="fnref:6"><a href="#fn:6" rel="footnote">
 <li><code>ActionTrackerId</code>：固定值，每个ActionTracker的id都不一样，在对ActionTracker做测试时就可以看到。</li>
 <li><code>ClickId</code>：第4步中IR传入的参数</li>
 <li><code>Oid</code>：即Order Id，能惟一标识此次交易的id，建议直接使用订单/运单id，一来方便用户在Extrabux中查看<sup id="fnref:8"><a href="#fn:8" rel="footnote">8</a></sup>，二来便于以后数据有问题时对账。</li>
-<li><code>EventDate</code>：交易完成的时间点，如订单/运单成功支付的时间点。格式：<code>dd-MMM-yyyy hh:mm:ss z</code>，如<code>21-Oct-2015 18:25:59 HKT</code><sup id="fnref:9"><a href="#fn:9" rel="footnote">9</a></sup>。小时请使用24小时制。</li>
+<li><code>EventDate</code>：交易完成的时间点，如订单/运单成功支付的时间点。格式：<code>dd-MMM-yyyy hh:mm:ss z</code>，如<code>21-Oct-2015 18:25:59 HKT</code><sup id="fnref:9"><a href="#fn:9" rel="footnote">9</a></sup>。小时请使用<code>24小时制</code>，因为在有些编程语言中<code>mm</code>表示的是12小时制，而<code>MM</code>表示的却是24小时制。此外，<code>z</code>在不同的编程语言中代表的意思也可能不一样，请换成你所使用的编程语言中能格式化成三个字母的用以代表时区的标识。</li>
 <li><code>Amount</code>：订单/运单金额。Advertiser可根据自身业务需求决定是否剔除优惠券、积分等内容。</li>
 <li><code>Currency</code>：可选项。货币的缩写。如果Advertiser和用户之间的交易不是以美元来结算的，请设置此属性，如人民币的货币缩写为CNY<sup id="fnref:10"><a href="#fn:10" rel="footnote">10</a></sup>。因为IR默认是以美元来结算，设置Currency后，IR会自动根据当前汇率将Amount换算成美元。</li>
 </ul>
@@ -424,7 +424,8 @@ IR接收到数据后一般20分钟内就可以在<a href="https://member.impactr
 1. 在对Action Tracker测试时，数据已经回传给了IR，但是在Action Trackers列表页面中对应的Test Status却是<code>System Invalidated</code>。<br/>
 原因：可能是因为你回传的ActionTrackerId和当前测试的action tracker的id不一致造成的。 <br/>
 2. 在做线上模拟测试时，数据明明已经回传给了IR，过了一段时间后却仍然在Pending Actions里看不到。<br/>
-原因：极有可能是EventDate的问题。这里我们再重申一下EventDate的限制条件，它<code>必须是在Click Date之后且不能是一个未来的时间</code>。Click Date是IR产生clickid的那个时间点，正常情况下EventDate肯定是在Click Date之后的，但是怕就怕在对EventDate做格式化的时候格错。格式化字符串<code>dd-MMM-yyyy hh:mm:ss z</code>是一个整体，不能先把EventDate格式化成<code>dd-MMM-yyyy hh:mm:ss</code>后再加上所在的timezone的缩写。如果你使用的编程语言本身(如C#，但C#有第三方库可以做到)不支持格式化出包含timezone缩写的形式，那折衷方案是先把EventDate格式化成UTC时间的字符串然后再拼接上<code>GMT</code>(注意GMT前有个空格)来表示使用的时区是GMT。</p>
+原因：极有可能是EventDate的问题。这里我们再重申一下EventDate的限制条件，它<code>必须是在Click Date之后且不能是一个未来的时间</code>。Click Date是IR产生clickid的那个时间点，正常情况下EventDate肯定是在Click Date之后的，但是怕就怕在对EventDate做格式化的时候格错。格式化字符串<code>dd-MMM-yyyy hh:mm:ss z</code>是一个整体，不能先把EventDate格式化成<code>dd-MMM-yyyy hh:mm:ss</code>后再加上所在的timezone的缩写。如果你使用的编程语言本身(如C#，但C#有第三方库可以做到)不支持格式化出包含timezone缩写的形式，那折衷方案是先把EventDate格式化成UTC时间的字符串然后再拼接上<code>GMT</code>(注意GMT前有个空格)来表示使用的时区是GMT。<br/>
+3. <code>Amount</code>表示的是订单/运单金额，请Advertiser不要误认为它是你们给到Extrabux的返点金额(或者叫佣金)，返点金额(佣金)应该给Extrabux多少是由IR来计算的，Advertiser无须关心。</p>
 <div class="footnotes">
 <hr/>
 <ol>
