@@ -214,6 +214,10 @@ IR接收到数据后一般20分钟内就可以在[Pending Actions](https://membe
 2. Ad的landing page是否设置正确  
 3. Angie将Ad url给到Advertiser的技术人员
 
+#####`重要提示`
+####线上模拟测试完成后，请Advertiser轻易不要改动相关的代码和逻辑，如确实有此需要，那么在项目部署到生产环境后请自行做一次`线上模拟测试`来保证功能正常。  
+
+
 ######Pending Actions
 在action的锁定期内，Advertiser可以对其进行数据修正、Approve、Reverse等操作。对于线上模拟测试的数据，可以在Reverse中选择`Test Action`。  
 如果有大量数据需要Reverse可以选择调用Web Services接口或上传数据文件到FTP服务器的方式来批量操作，详情请查看[这里](http://support.impactradius.com/display/ADVERTISER/Understanding+Batch+Reporting+of+Conversion+Returns)。更多关于Pending Actions的文档请查看[FAQs-Pending Actions](http://support.impactradius.com/display/ADVERTISER/FAQs+-+Pending+Actions)
