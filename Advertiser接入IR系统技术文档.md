@@ -25,8 +25,8 @@ IR在Extrabux和Advertiser中间起到桥梁的作用。
 >
 Extrabux和IR之间的交互至此结束，Advertiser无须关心以上流程。下面进入IR和Advertiser之间的交互。
 
-4. IR引导用户进入此Ad url对应的Advertiser提供的入口页面[^3]，并传入此次Ad click event的惟一标识和来源标识，即clickid[^4]和irmpname[^5]。  
-Extrabux的irmpname是`Extrabux Shanghai`。在后台对irmpname做equals的时候请注意，`Extrabux Shanghai`中间是有个空格的，虽然在跳转的过程中会被浏览器转义成`+`号，但你们的框架在把它从request中解析出来后应该仍然是空格。  
+4. IR引导用户进入此Ad url对应的Advertiser提供的入口页面(我们现在推荐做`全局拦截`而不是定义一个具体的入口页面，详细原因请看页脚注释[^3])，并传入此次Ad click event的惟一标识和来源标识，即clickid[^4]和irmpname[^5]。  
+Extrabux的irmpname是`Extrabux Shanghai`。在后台对irmpname做equals的时候请注意，`Extrabux Shanghai`中间是有个空格的，虽然在跳转的过程中会被浏览器转义成`+`号，但你们的Web框架在把它从request中解析出来后应该仍然是空格。  
 Advertiser须将这两个参数[^6]保存到cookie里并设置一定的有效期(一般半个月即可)，因为不知道用户成功转化需要多长时间。
 
 5. 用户成功转化后，Advertiser回传数据给IR。建议Advertiser将clickid、irmpname和订单/运单信息关联起来，方便以后自己做查询统计；并对回传成功的记录打上标记，以便失败后重传。  
@@ -113,9 +113,10 @@ XML格式数据样例：
 		</ItemConversionRequests>
 `重要提示1`：The Item data needs to be ordered first by OrderId, then Item SKU. If records are out of order, the items will be viewed as duplicate orders and only the first item will count.  
 `重要提示2`：请务必将样例中的CampaignId和ActionTrackerId替换成你们自己的。  
+`重要提示3`：请尽量不要上传重复数据。  
 Items Conversion Request一般用于电商网站；Conversion Request则一般用于转运公司。当然，如果Advertiser想把一个运单也当作一件Item的话，用Items Conversion Request也无妨。  
-数据文件上传成功后，Advertiser的注册邮箱里会收到一封IR发出的标题为`Data Submission Received`的邮件，里面是对此次上传的数据的处理结果。Batch Details中Failure为False时数据才算上传成功。
-数据文件默认是上传到根目录下的，Advertiser无须考虑创建不同的文件夹来管理上传的数据文件，IR也没说允许这么做。  
+数据文件上传成功后，Advertiser的注册邮箱里会收到一封IR发出的标题为`Data Submission Received`的邮件，里面是对此次上传的数据的处理结果。Batch Details中Failure为False时数据才算上传成功。  
+数据文件默认是上传到IR的FTP服务器的根目录下的，Advertiser无须考虑创建不同的文件夹来管理上传的数据文件，IR也没说允许这么做。如果您使用的是可视化上传工具，如FileZilla之类的，在上传成功后应该是看不到刚才所上传的文件的，这是正常现象，IR有其自己的处理方式，无需担忧。  
 更多信息请参考文档：[Batch FTP Tracking Method](http://support.impactradius.com/display/ADVERTISER/Batch+FTP+Tracking+Method)、[Advertiser FTP Conversion Reporting Method](http://support.impactradius.com/display/ADVERTISER/Guide+-+Tracking+Integration#Guide-TrackingIntegration-AdvertiserFTPConversionReportingMethodforOnlineActions)
 
 - Web Services  
@@ -233,7 +234,7 @@ Advertisers在实践中会遇到各种各样的小问题，在文档上方的流
 
 [^1]:订单金额里可能包含优惠券、积分等内容，Advertiser可根据自身的业务需求来决定是否剔除它们。
 [^2]:也可以是固定金额的佣金。
-[^3]:这里虽然说的是入口页面，但其实只要有个后台就行了，不需要真的有对应的页面。因为它只要能接收click和irmpname参数，然后写到cookie里，然后直接302重定向到首页或其他页面就行了。而且强烈建议在这个后台做302重定向，不然一长串的参数在地址栏里确实不好看。它的职责就是接收IR传入的参数，参数处理完后就重定向到想去的页面。
+[^3]:这里虽然说的是入口页面，但其实只要有个后台就行了，不需要真的有对应的页面。因为它只要能接收clickid和irmpname参数，然后写到cookie里，然后直接302重定向到首页或其他页面就行了。而且强烈建议在这个后台做302重定向，不然一长串的参数在地址栏里确实不好看。它的职责就是接收IR传入的参数，参数处理完后就重定向到想去的页面。那如何重定向到目标页面呢？Advertiser可以为入口页面额外定义一个target(或redirect_url之类的)参数，当处理完IR传入的参数后再将用户重定向到这个参数所代表的页面。但是，我们更推荐另外一种方式，就是对clickid和irmpname参数做`全局拦截`，即无论用户进入的是哪个页面，只要url后面带有这两个参数就对它们进行处理。相比额外加一个target参数的方式，全局拦截可以有效降低IR配置的复杂度，无须每加一个promotion page就需要设置一下对应的target参数值。  
 [^4]:每次Ad click都会产生一个惟一的clickid，它是字母、数字和一些符号的组合。
 [^5]:Impact Radius Media Partner Name
 [^6]:IR内置的其他参数和Advertiser可自定义的参数请参考[Campaign Settings -> Online Traffic Settings -> Show advanced settings -> Query String Parameters](https://member.impactradius.com/secure/advertiser/campaign/technicalintegration-flow.ihtml?execution=e1s1)

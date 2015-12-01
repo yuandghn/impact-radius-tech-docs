@@ -191,8 +191,8 @@ sup {
 <li><p>Extrabux调用IR提供的此Ad的url并传入当前用户的标识信息</p>
 
 <blockquote><p>Extrabux和IR之间的交互至此结束，Advertiser无须关心以上流程。下面进入IR和Advertiser之间的交互。</p></blockquote></li>
-<li><p>IR引导用户进入此Ad url对应的Advertiser提供的入口页面<sup id="fnref:3"><a href="#fn:3" rel="footnote">3</a></sup>，并传入此次Ad click event的惟一标识和来源标识，即clickid<sup id="fnref:4"><a href="#fn:4" rel="footnote">4</a></sup>和irmpname<sup id="fnref:5"><a href="#fn:5" rel="footnote">5</a></sup>。<br/>
-Extrabux的irmpname是<code>Extrabux Shanghai</code>。在后台对irmpname做equals的时候请注意，<code>Extrabux Shanghai</code>中间是有个空格的，虽然在跳转的过程中会被浏览器转义成<code>+</code>号，但你们的框架在把它从request中解析出来后应该仍然是空格。<br/>
+<li><p>IR引导用户进入此Ad url对应的Advertiser提供的入口页面(我们现在推荐做<code>全局拦截</code>而不是定义一个具体的入口页面，详细原因请看页脚注释<sup id="fnref:3"><a href="#fn:3" rel="footnote">3</a></sup>)，并传入此次Ad click event的惟一标识和来源标识，即clickid<sup id="fnref:4"><a href="#fn:4" rel="footnote">4</a></sup>和irmpname<sup id="fnref:5"><a href="#fn:5" rel="footnote">5</a></sup>。<br/>
+Extrabux的irmpname是<code>Extrabux Shanghai</code>。在后台对irmpname做equals的时候请注意，<code>Extrabux Shanghai</code>中间是有个空格的，虽然在跳转的过程中会被浏览器转义成<code>+</code>号，但你们的Web框架在把它从request中解析出来后应该仍然是空格。<br/>
 Advertiser须将这两个参数<sup id="fnref:6"><a href="#fn:6" rel="footnote">6</a></sup>保存到cookie里并设置一定的有效期(一般半个月即可)，因为不知道用户成功转化需要多长时间。</p></li>
 <li><p>用户成功转化后，Advertiser回传数据给IR。建议Advertiser将clickid、irmpname和订单/运单信息关联起来，方便以后自己做查询统计；并对回传成功的记录打上标记，以便失败后重传。<br/>
 回传的数据内容主要包括：CampaignId、ActionTrackerId、ClickId、Oid、EventDate、Amount、Currency等<sup id="fnref:7"><a href="#fn:7" rel="footnote">7</a></sup>。<br/>
@@ -293,9 +293,10 @@ XML格式数据样例：</p>
 
 <p><code>重要提示1</code>：The Item data needs to be ordered first by OrderId, then Item SKU. If records are out of order, the items will be viewed as duplicate orders and only the first item will count.<br/>
 <code>重要提示2</code>：请务必将样例中的CampaignId和ActionTrackerId替换成你们自己的。<br/>
+<code>重要提示3</code>：请尽量不要上传重复数据。<br/>
 Items Conversion Request一般用于电商网站；Conversion Request则一般用于转运公司。当然，如果Advertiser想把一个运单也当作一件Item的话，用Items Conversion Request也无妨。<br/>
-数据文件上传成功后，Advertiser的注册邮箱里会收到一封IR发出的标题为<code>Data Submission Received</code>的邮件，里面是对此次上传的数据的处理结果。Batch Details中Failure为False时数据才算上传成功。
-数据文件默认是上传到根目录下的，Advertiser无须考虑创建不同的文件夹来管理上传的数据文件，IR也没说允许这么做。<br/>
+数据文件上传成功后，Advertiser的注册邮箱里会收到一封IR发出的标题为<code>Data Submission Received</code>的邮件，里面是对此次上传的数据的处理结果。Batch Details中Failure为False时数据才算上传成功。<br/>
+数据文件默认是上传到IR的FTP服务器的根目录下的，Advertiser无须考虑创建不同的文件夹来管理上传的数据文件，IR也没说允许这么做。如果您使用的是可视化上传工具，如FileZilla之类的，在上传成功后应该是看不到刚才所上传的文件的，这是正常现象，IR有其自己的处理方式，无需担忧。<br/>
 更多信息请参考文档：<a href="http://support.impactradius.com/display/ADVERTISER/Batch+FTP+Tracking+Method">Batch FTP Tracking Method</a>、<a href="http://support.impactradius.com/display/ADVERTISER/Guide+-+Tracking+Integration#Guide-TrackingIntegration-AdvertiserFTPConversionReportingMethodforOnlineActions">Advertiser FTP Conversion Reporting Method</a></p></li>
 <li><p>Web Services<br/>
 这里的Web Services不是通常意义上的Web Service，其实它就是个HTTP REST API。各个编程语言都有HTTP Client可以使用。<br/>
@@ -438,7 +439,7 @@ IR接收到数据后一般20分钟内就可以在<a href="https://member.impactr
 <li id="fn:2">
 <p>也可以是固定金额的佣金。<a href="#fnref:2" rev="footnote">&#8617;</a></p></li>
 <li id="fn:3">
-<p>这里虽然说的是入口页面，但其实只要有个后台就行了，不需要真的有对应的页面。因为它只要能接收click和irmpname参数，然后写到cookie里，然后直接302重定向到首页或其他页面就行了。而且强烈建议在这个后台做302重定向，不然一长串的参数在地址栏里确实不好看。它的职责就是接收IR传入的参数，参数处理完后就重定向到想去的页面。<a href="#fnref:3" rev="footnote">&#8617;</a></p></li>
+<p>这里虽然说的是入口页面，但其实只要有个后台就行了，不需要真的有对应的页面。因为它只要能接收clickid和irmpname参数，然后写到cookie里，然后直接302重定向到首页或其他页面就行了。而且强烈建议在这个后台做302重定向，不然一长串的参数在地址栏里确实不好看。它的职责就是接收IR传入的参数，参数处理完后就重定向到想去的页面。那如何重定向到目标页面呢？Advertiser可以为入口页面额外定义一个target(或redirect_url之类的)参数，当处理完IR传入的参数后再将用户重定向到这个参数所代表的页面。但是，我们更推荐另外一种方式，就是对clickid和irmpname参数做<code>全局拦截</code>，即无论用户进入的是哪个页面，只要url后面带有这两个参数就对它们进行处理。相比额外加一个target参数的方式，全局拦截可以有效降低IR配置的复杂度，无须每加一个promotion page就需要设置一下对应的target参数值。  <a href="#fnref:3" rev="footnote">&#8617;</a></p></li>
 <li id="fn:4">
 <p>每次Ad click都会产生一个惟一的clickid，它是字母、数字和一些符号的组合。<a href="#fnref:4" rev="footnote">&#8617;</a></p></li>
 <li id="fn:5">
