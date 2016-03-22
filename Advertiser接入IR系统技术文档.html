@@ -191,10 +191,11 @@ sup {
 <li><p>Extrabux调用IR提供的此Ad的url并传入当前用户的标识信息</p>
 
 <blockquote><p>Extrabux和IR之间的交互至此结束，Advertiser无须关心以上流程。下面进入IR和Advertiser之间的交互。</p></blockquote></li>
-<li><p>IR引导用户进入此Ad url对应的Advertiser提供的入口页面(我们现在推荐做<code>全局拦截</code>而不是定义一个具体的入口页面，详细原因请看页脚注释<sup id="fnref:3"><a href="#fn:3" rel="footnote">3</a></sup>)，并传入此次Ad click event的惟一标识和来源标识，即clickid<sup id="fnref:4"><a href="#fn:4" rel="footnote">4</a></sup>和irmpname<sup id="fnref:5"><a href="#fn:5" rel="footnote">5</a></sup>。<br/>
-Extrabux的irmpname是<code>Extrabux Shanghai</code>。在后台对irmpname做equals的时候请注意，<code>Extrabux Shanghai</code>中间是有个空格的，虽然在跳转的过程中会被浏览器转义成<code>+</code>号，但你们的Web框架在把它从request中解析出来后应该仍然是空格。<br/>
-Advertiser须将这两个参数<sup id="fnref:6"><a href="#fn:6" rel="footnote">6</a></sup>保存到cookie里并设置一定的有效期(一般半个月即可)，因为不知道用户成功转化需要多长时间。</p></li>
-<li><p>用户成功转化后，Advertiser回传数据给IR。建议Advertiser将clickid、irmpname和订单/运单信息关联起来，方便以后自己做查询统计；并对回传成功的记录打上标记，以便失败后重传。<br/>
+<li><p>IR引导用户进入此Ad url对应的Advertiser提供的入口页面(我们现在推荐做<code>全局拦截</code>而不是定义一个具体的入口页面，详细原因请看页脚注释<sup id="fnref:3"><a href="#fn:3" rel="footnote">3</a></sup>)，并传入此次Ad click event的惟一标识和来源标识，即clickid<sup id="fnref:4"><a href="#fn:4" rel="footnote">4</a></sup>和irpid<sup id="fnref:5"><a href="#fn:5" rel="footnote">5</a></sup>。Extrabux的irpid是<code>126888</code>。 <br/>
+Advertiser须将这两个参数<sup id="fnref:6"><a href="#fn:6" rel="footnote">6</a></sup>保存到cookie里并设置一定的有效期(一般半个月即可)，因为不知道用户成功转化需要多长时间。</p>
+
+<blockquote><p>已经接入到IR里的商家使用的参数是<code>irmpname</code>而非<code>irpid</code>，我们现在推荐使用<code>irpid</code>，原因是我们发现<code>irmpname</code>的值是可以被人为修改的，而<code>irpid</code>的值是固定不变且惟一的。后面如有需要，我们会协助已接入的商家使用新的<code>irpid</code>参数。</p></blockquote></li>
+<li><p>用户成功转化后，Advertiser回传数据给IR。建议Advertiser将clickid、irpid和订单/运单信息关联起来，方便以后自己做查询统计；并对回传成功的记录打上标记，以便失败后重传。<br/>
 回传的数据内容主要包括：CampaignId、ActionTrackerId、ClickId、Oid、EventDate、Amount、Currency等<sup id="fnref:7"><a href="#fn:7" rel="footnote">7</a></sup>。<br/>
 以下是各个参数的说明。</p>
 
@@ -320,7 +321,8 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
   &lt;/ImpactRadiusResponse&gt;
 </code></pre>
 
-<p>失败时类似的返回信息：</p>
+<p><code>注意</code>：这里的<code>QUEUED</code>仅仅表示IR接收到了你回传的数据，但是数据是否Valid、是否会被IR所接受仍然不知道，只有等IR处理完成(非实时)后才知晓。   <br/>
+失败时类似的返回信息：</p>
 
 <pre><code>  &lt;ImpactRadiusResponse&gt;
       &lt;Status&gt;ERROR&lt;/Status&gt;
@@ -372,9 +374,9 @@ Removal or modification of this code will disrupt marketing activities. This cod
 <p>细心的同学可能注意到了，这里面回传的参数与我们在流程细节里描述的不一致，根本就没有CampaignId、ActionTrackerId、ClickId和EventDate等参数。是的，在Pixel方式里的确不用显式的传入这些参数，IR会通过其他形式自己获取到。比如，页面加载的"/js/3141/8324/irv3.js"文件里就包含了CampaignId和ActionTrackerId；ClickId在传给你的入口页面之前IR就已经以其他方式保存到自己的cookie里了，当irEvent.fire()的时候就会带过去，同时呢，EventDate也有了。</p>
 
 <p>测试流程大同小异，我们以Web Service方式为例： <br/>
-<img src="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-test-page.png" alt="web-service-test-page" />
+<img src="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-test-page-new.png" alt="web-service-test-page" />
 你需要的<code>CampaignId</code>、<code>ActionTrackerId</code>、<code>ClickId</code>都有了。<br/>
-Landing Page URL就是我们上面提到的入口页面。这里有个小技巧。当技术人员在本地完成所有的开发工作后，可直接在测试页面对本地项目进行测试，无须部署到线上之后再测，这样可以避免因为一些小问题而频繁的上线。请把Landing Page URL中的域名改成你本地的地址，如127.0.0.1之类的，irmpname参数的值可直接替换成<code>Extrabux Shanghai</code>，clickid参数的值IR会自动替换成上面的Test Key。点击<code>Start Test in New Window</code>按钮后启动测试，页面里随之会出现一个loading条，IR在等待你回传数据给它。<br/>
+Landing Page URL就是我们上面提到的入口页面。这里有个小技巧。当技术人员在本地完成所有的开发工作后，可直接在测试页面对本地项目进行测试，无须部署到线上之后再测，这样可以避免因为一些小问题而频繁的上线。请把Landing Page URL中的域名改成你本地的地址，如127.0.0.1之类的，irpid参数的值可直接替换成<code>126888</code>，clickid参数的值IR会自动替换成上面的Test Key。点击<code>Start Test in New Window</code>按钮后启动测试，页面里随之会出现一个loading条，IR在等待你回传数据给它。<br/>
 <code>注意事项</code>：当你使用FTP或Web Service的方式来回传数据时，因为EventDate是显式设置的，不像在Pixel方式里是由IR隐式获得的，所以要特别注意它的值。EventDate的限制条件：<code>必须是在Click Date之后且不能是一个未来的时间</code>。Click Date是IR产生clickid的那个时间点，也就是你进入到上图所示的页面的那个时间点。假设这个时间点大约是"19-Oct-2015 12:36:30 HKT"，回传动作发生的时间点大约是"19-Oct-2015 12:42:09 HKT"，那在你回传的数据里EventDate的值必须在这两个时间点之间。</p>
 
 <p>为了方便开发理解，我使用了Chrome浏览器的Postman插件来回传数据，截图在<a href="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-back-data-to-ir.png">这里</a>。<br/>
@@ -406,6 +408,11 @@ Advertiser可就同一项业务与不同的Media Partner签订不同的协议内
 做线上模拟测试的必要性是因为本地和线上是两个完全不同的环境，本地能跑通的程序到了线上未必也能跑通，如果中间哪个环节存在问题，那么提前暴露出来并解决掉要比正式提供给用户使用后再回来修复所带来的影响要小的多。做线上模拟测试的困难程度对各个Advertiser来说可能不一样，但这个步骤不能省。  <br/>
 Action Tracker在本地测试通过后由Advertiser部署程序到线上，Angie将对应的Ad url给到Advertiser的技术人员，然后双方可各自进行线上模拟测试。线上模拟测试会省略掉Extrabux到IR的部分，直接从访问Ad url开始。对于Advertiser是转运公司的情况，还需要转运公司能模拟入库、支付、出库等动作。<br/>
 IR接收到数据后一般20分钟内就可以在<a href="https://member.impactradius.com/secure/advertiser/actions/open/pending-actions-flow.ihtml?execution=e12s1">Pending Actions</a>里看到，而在<a href="https://member.impactradius.com/secure/advertiser/Adv_Campaign_Dashboard/r11/report/viewReport.report?handle=adv_generation_foundation_campaign_dashboard">Reports</a>里看到至少需要2+小时。</p>
+
+<p>如果20分钟后还没在Pending Actions里看到回传的数据，那极有可能你回传给IR的数据是Invalid的，IR不予处理。这时，要怎样才能看到IR对此次回传动作的处理结果呢？这要根据你所使用的Tracking Method来定。
+1. Batch FTP<br/>
+   请前去注册邮箱里查看标题为<code>Data Submission Received</code>的邮件，里面有Batch Summaries的链接，打开后查看Batch Details所指向的内容。<br/>
+2. Web Services</p>
 
 <h6><code>注意事项</code></h6>
 
@@ -439,11 +446,11 @@ IR接收到数据后一般20分钟内就可以在<a href="https://member.impactr
 <li id="fn:2">
 <p>也可以是固定金额的佣金。<a href="#fnref:2" rev="footnote">&#8617;</a></p></li>
 <li id="fn:3">
-<p>这里虽然说的是入口页面，但其实只要有个后台就行了，不需要真的有对应的页面。因为它只要能接收clickid和irmpname参数，然后写到cookie里，然后直接302重定向到首页或其他页面就行了。而且强烈建议在这个后台做302重定向，不然一长串的参数在地址栏里确实不好看。它的职责就是接收IR传入的参数，参数处理完后就重定向到想去的页面。那如何重定向到目标页面呢？Advertiser可以为入口页面额外定义一个target(或redirect_url之类的)参数，当处理完IR传入的参数后再将用户重定向到这个参数所代表的页面。但是，我们更推荐另外一种方式，就是对clickid和irmpname参数做<code>全局拦截</code>，即无论用户进入的是哪个页面，只要url后面带有这两个参数就对它们进行处理。相比额外加一个target参数的方式，全局拦截可以有效降低IR配置的复杂度，无须每加一个promotion page就需要设置一下对应的target参数值。  <a href="#fnref:3" rev="footnote">&#8617;</a></p></li>
+<p>这里虽然说的是入口页面，但其实只要有个后台就行了，不需要真的有对应的页面。因为它只要能接收clickid和irpid参数，然后写到cookie里，然后直接302重定向到首页或其他页面就行了。而且强烈建议在这个后台做302重定向，不然一长串的参数在地址栏里确实不好看。它的职责就是接收IR传入的参数，参数处理完后就重定向到想去的页面。那如何重定向到目标页面呢？Advertiser可以为入口页面额外定义一个target(或redirect_url之类的)参数，当处理完IR传入的参数后再将用户重定向到这个参数所代表的页面。但是，我们更推荐另外一种方式，就是对clickid和irpid参数做<code>全局拦截</code>，即无论用户进入的是哪个页面，只要url后面带有这两个参数就对它们进行处理。相比额外加一个target参数的方式，全局拦截可以有效降低IR配置的复杂度，无须每加一个promotion page就需要设置一下对应的target参数值。  <a href="#fnref:3" rev="footnote">&#8617;</a></p></li>
 <li id="fn:4">
 <p>每次Ad click都会产生一个惟一的clickid，它是字母、数字和一些符号的组合。<a href="#fnref:4" rev="footnote">&#8617;</a></p></li>
 <li id="fn:5">
-<p>Impact Radius Media Partner Name<a href="#fnref:5" rev="footnote">&#8617;</a></p></li>
+<p>Impact Radius Media Partner Id的缩写。<a href="#fnref:5" rev="footnote">&#8617;</a></p></li>
 <li id="fn:6">
 <p>IR内置的其他参数和Advertiser可自定义的参数请参考<a href="https://member.impactradius.com/secure/advertiser/campaign/technicalintegration-flow.ihtml?execution=e1s1">Campaign Settings -> Online Traffic Settings -> Show advanced settings -> Query String Parameters</a><a href="#fnref:6" rev="footnote">&#8617;</a></p></li>
 <li id="fn:7">
@@ -457,7 +464,7 @@ IR接收到数据后一般20分钟内就可以在<a href="https://member.impactr
 <li id="fn:11">
 <p>Batch FTP和Web Services这两种tracking method是延后回传数据。<a href="#fnref:11" rev="footnote">&#8617;</a></p></li>
 <li id="fn:12">
-<p>体会到irmpname参数的用处了吧<a href="#fnref:12" rev="footnote">&#8617;</a></p></li>
+<p>体会到irpid参数的用处了吧<a href="#fnref:12" rev="footnote">&#8617;</a></p></li>
 <li id="fn:13">
 <p>尽管如此，Extrabux和Advertiser最好还是引导用户每次下单前都从Extrabux点过去，理想状况是一个clickid对应一笔交易。<a href="#fnref:13" rev="footnote">&#8617;</a></p></li>
 </ol>
