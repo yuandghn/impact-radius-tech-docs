@@ -119,25 +119,39 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 数据文件上传成功后，Advertiser的注册邮箱里会收到一封IR发出的标题为`Data Submission Received`的邮件，里面是对此次上传的数据的处理结果。Batch Details中Failure为False时数据才算上传成功。  
 数据文件默认是上传到IR的FTP服务器的根目录下的，Advertiser无须考虑创建不同的文件夹来管理上传的数据文件，IR也没说允许这么做。如果您使用的是可视化上传工具，如FileZilla之类的，在上传成功后应该是看不到刚才所上传的文件的，这是正常现象，IR有其自己的处理方式，无需担忧。  
 更多信息请参考文档：[Batch FTP Tracking Method](http://support.impactradius.com/display/ADVERTISER/Batch+FTP+Tracking+Method)、[Advertiser FTP Conversion Reporting Method](http://support.impactradius.com/display/ADVERTISER/Guide+-+Tracking+Integration#Guide-TrackingIntegration-AdvertiserFTPConversionReportingMethodforOnlineActions)
-
 - Web Services  
 这里的Web Services不是通常意义上的Web Service，其实它就是个HTTP REST API。各个编程语言都有HTTP Client可以使用。  
 请详细阅读文档[Web Services Tracking](http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking)中关于`authenticate`的内容。AccountSid和authentication token可以从[这里](https://member.impactradius.com/secure/advertiser/accountSettings/techintegration/adv-wsapi-flow.ihtml?execution=e2s1)获得。  
-更多信息请参考文档：[Web Services Tracking](http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking)、[API-Conversions](http://dev.impactradius.com/display/api/Conversions)    
+更多信息请参考文档：[Web Services Tracking](http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking)、[API-Conversions](http://dev.impactradius.com/display/api/Conversions)、[Response Formats](http://dev.impactradius.com/display/api/Getting+Started#GettingStarted-responseFormatsResponseFormats)      
 `纠错`：在文档[Web Services Tracking](http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking)中Conversions的api接口    
 		
 		https://api.impactradius.com/2010-09-01/Advertisers/{AccountSid}/Conversions
 是错误的。正确的应该是	
   
- 	  	https://api.impactradius.com/Advertisers/{AccountSid}/Conversions
-调用Web Services API成功后类似的返回信息：
+ 	  	https://api.impactradius.com/Advertisers/{AccountSid}/Conversions 
+或  
+
+  		https://{AccountSid}:{AuthToken}@api.impactradius.com/Advertisers/{AccountSid}/Conversions  
+另外，IR默认返回的是XML格式的数据，如果想让它返回JSON格式的数据，请在url后面加上.json的扩展名，例如  
+
+		https://api.impactradius.com/Advertisers/{AccountSid}/Conversions.json
+调用Web Services API成功后类似的返回信息：  
+XML格式：
 
 		<ImpactRadiusResponse>
  			<Status>QUEUED</Status>
  			<QueuedUri>/Advertisers/{AccountSid}/BatchSummaries/XysrtIBGGA</QueuedUri> 
 		</ImpactRadiusResponse>
+JSON格式：  
+
+		{
+ 			"Status": "QUEUED",
+ 			"QueuedUri": "/Advertisers/IRCyVFnPHHra3zrNyjz3RTkPoRtri6zSXA/QueuedStatus/wer123456.json"
+		}
+
 `注意`：这里的`QUEUED`仅仅表示IR接收到了你回传的数据，但是数据是否Valid、是否会被IR所接受仍然不知道，只有等IR处理完成(非实时)后才知晓。		
-失败时类似的返回信息：
+失败时类似的返回信息：  
+XML格式：
 
 		<ImpactRadiusResponse>
  			<Status>ERROR</Status>
@@ -149,6 +163,18 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
   				</Error>
  			</Errors>        
 		</ImpactRadiusResponse>
+JSON格式：  
+
+		{ 
+  			"Status": "ERROR",
+  			"Message": "Validation Failed",
+  			"Errors":  [
+         		{
+           			"Field": "AccountId",
+           			"Message": "Not a numeric value" 
+         		}  
+   			]   
+		}
 
 ###Action Tracker  
 为各种不同的action定义相应的tracker。  
@@ -212,7 +238,7 @@ Ads和Insertion Order设置好后，整个流程就通了。
 Action Tracker在本地测试通过后由Advertiser部署程序到线上，Angie将对应的Ad url给到Advertiser的技术人员，然后双方可各自进行线上模拟测试。线上模拟测试会省略掉Extrabux到IR的部分，直接从访问Ad url开始。对于Advertiser是转运公司的情况，还需要转运公司能模拟入库、支付、出库等动作。  
 IR接收到数据后一般20分钟内就可以在[Pending Actions](https://member.impactradius.com/secure/advertiser/actions/open/pending-actions-flow.ihtml?execution=e12s1)里看到，而在[Reports](https://member.impactradius.com/secure/advertiser/Adv_Campaign_Dashboard/r11/report/viewReport.report?handle=adv_generation_foundation_campaign_dashboard)里看到至少需要2+小时。
   
-如果20分钟后还没在Pending Actions里看到回传的数据，那极有可能你回传给IR的数据是Invalid的，IR不予处理。这时，要怎样才能看到IR对此次回传动作的处理结果呢？这要根据你所使用的Tracking Method来定。
+如果20分钟后还没在Pending Actions里看到回传的数据，那极有可能你回传给IR的数据是Invalid的，IR不予处理。这时，要怎样才能看到IR对此次回传动作的处理结果呢？这要根据你所使用的Tracking Method来定。  
 1. Batch FTP  
    请前去注册邮箱里查看标题为`Data Submission Received`的邮件，里面有Batch Summaries的链接，打开后查看Batch Details所指向的内容。  
 2. Web Services  
@@ -237,7 +263,6 @@ Advertisers在实践中会遇到各种各样的小问题，在文档上方的流
 原因：可能是因为你回传的ActionTrackerId和当前测试的action tracker的id不一致造成的。   
 2. 在做线上模拟测试时，数据明明已经回传给了IR，过了一段时间后却仍然在Pending Actions里看不到。  
 原因：极有可能是EventDate的问题。这里我们再重申一下EventDate的限制条件，它`必须是在Click Date之后且不能是一个未来的时间`。Click Date是IR产生clickid的那个时间点，正常情况下EventDate肯定是在Click Date之后的，但是怕就怕在对EventDate做格式化的时候格错。格式化字符串`dd-MMM-yyyy hh:mm:ss z`是一个整体，不能先把EventDate格式化成`dd-MMM-yyyy hh:mm:ss`后再加上所在的timezone的缩写。如果你使用的编程语言本身(如C#，但C#有第三方库可以做到)不支持格式化出包含timezone缩写的形式，那折衷方案是先把EventDate格式化成UTC时间的字符串然后再拼接上` GMT`(注意GMT前有个空格)来表示使用的时区是GMT。  
-3. `Amount`表示的是订单/运单金额，请Advertiser不要误认为它是你们给到Extrabux的返点金额(或者叫佣金)，返点金额(佣金)应该给Extrabux多少是由IR来计算的，Advertiser无须关心。
 
 
 [^1]:订单金额里可能包含优惠券、积分等内容，Advertiser可根据自身的业务需求来决定是否剔除它们。

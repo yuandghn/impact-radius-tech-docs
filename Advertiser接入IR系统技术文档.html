@@ -302,7 +302,7 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 <li><p>Web Services<br/>
 这里的Web Services不是通常意义上的Web Service，其实它就是个HTTP REST API。各个编程语言都有HTTP Client可以使用。<br/>
 请详细阅读文档<a href="http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking">Web Services Tracking</a>中关于<code>authenticate</code>的内容。AccountSid和authentication token可以从<a href="https://member.impactradius.com/secure/advertiser/accountSettings/techintegration/adv-wsapi-flow.ihtml?execution=e2s1">这里</a>获得。<br/>
-更多信息请参考文档：<a href="http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking">Web Services Tracking</a>、<a href="http://dev.impactradius.com/display/api/Conversions">API-Conversions</a>  <br/>
+更多信息请参考文档：<a href="http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking">Web Services Tracking</a>、<a href="http://dev.impactradius.com/display/api/Conversions">API-Conversions</a>、<a href="http://dev.impactradius.com/display/api/Getting+Started#GettingStarted-responseFormatsResponseFormats">Response Formats</a>    <br/>
 <code>纠错</code>：在文档<a href="http://support.impactradius.com/display/ADVERTISER/Web+Services+Tracking">Web Services Tracking</a>中Conversions的api接口</p>
 
 <pre><code>  https://api.impactradius.com/2010-09-01/Advertisers/{AccountSid}/Conversions
@@ -310,10 +310,21 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
 
 <p>是错误的。正确的应该是</p>
 
-<pre><code>  https://api.impactradius.com/Advertisers/{AccountSid}/Conversions
+<pre><code>  https://api.impactradius.com/Advertisers/{AccountSid}/Conversions 
 </code></pre>
 
-<p>调用Web Services API成功后类似的返回信息：</p>
+<p>或</p>
+
+<pre><code>  https://{AccountSid}:{AuthToken}@api.impactradius.com/Advertisers/{AccountSid}/Conversions  
+</code></pre>
+
+<p>另外，IR默认返回的是XML格式的数据，如果想让它返回JSON格式的数据，请在url后面加上.json的扩展名，例如</p>
+
+<pre><code>  https://api.impactradius.com/Advertisers/{AccountSid}/Conversions.json
+</code></pre>
+
+<p>调用Web Services API成功后类似的返回信息：<br/>
+XML格式：</p>
 
 <pre><code>  &lt;ImpactRadiusResponse&gt;
       &lt;Status&gt;QUEUED&lt;/Status&gt;
@@ -321,22 +332,45 @@ Items Conversion Request一般用于电商网站；Conversion Request则一般�
   &lt;/ImpactRadiusResponse&gt;
 </code></pre>
 
-<p><code>注意</code>：这里的<code>QUEUED</code>仅仅表示IR接收到了你回传的数据，但是数据是否Valid、是否会被IR所接受仍然不知道，只有等IR处理完成(非实时)后才知晓。   <br/>
-失败时类似的返回信息：</p>
+<p>JSON格式：</p>
 
-<pre><code>  &lt;ImpactRadiusResponse&gt;
-      &lt;Status&gt;ERROR&lt;/Status&gt;
-      &lt;Message&gt;Validation Failed&lt;/Message&gt;
-      &lt;Errors&gt;
-          &lt;Error&gt;
-              &lt;Field&gt;CampaignId&lt;/Field&gt;
-              &lt;Message&gt;Invalid value xyz&lt;/Code&gt;
-          &lt;/Error&gt;
-      &lt;/Errors&gt;        
-  &lt;/ImpactRadiusResponse&gt;
+<pre><code>  {
+      "Status": "QUEUED",
+      "QueuedUri": "/Advertisers/IRCyVFnPHHra3zrNyjz3RTkPoRtri6zSXA/QueuedStatus/wer123456.json"
+  }
 </code></pre></li>
 </ul>
 
+
+<p><code>注意</code>：这里的<code>QUEUED</code>仅仅表示IR接收到了你回传的数据，但是数据是否Valid、是否会被IR所接受仍然不知道，只有等IR处理完成(非实时)后才知晓。   <br/>
+失败时类似的返回信息：<br/>
+XML格式：</p>
+
+<pre><code>    &lt;ImpactRadiusResponse&gt;
+        &lt;Status&gt;ERROR&lt;/Status&gt;
+        &lt;Message&gt;Validation Failed&lt;/Message&gt;
+        &lt;Errors&gt;
+            &lt;Error&gt;
+                &lt;Field&gt;CampaignId&lt;/Field&gt;
+                &lt;Message&gt;Invalid value xyz&lt;/Code&gt;
+            &lt;/Error&gt;
+        &lt;/Errors&gt;        
+    &lt;/ImpactRadiusResponse&gt;
+</code></pre>
+
+<p>JSON格式：</p>
+
+<pre><code>    { 
+        "Status": "ERROR",
+        "Message": "Validation Failed",
+        "Errors":  [
+            {
+                "Field": "AccountId",
+                "Message": "Not a numeric value" 
+            }  
+        ]   
+    }
+</code></pre>
 
 <h3>Action Tracker</h3>
 
@@ -409,7 +443,7 @@ Advertiser可就同一项业务与不同的Media Partner签订不同的协议内
 Action Tracker在本地测试通过后由Advertiser部署程序到线上，Angie将对应的Ad url给到Advertiser的技术人员，然后双方可各自进行线上模拟测试。线上模拟测试会省略掉Extrabux到IR的部分，直接从访问Ad url开始。对于Advertiser是转运公司的情况，还需要转运公司能模拟入库、支付、出库等动作。<br/>
 IR接收到数据后一般20分钟内就可以在<a href="https://member.impactradius.com/secure/advertiser/actions/open/pending-actions-flow.ihtml?execution=e12s1">Pending Actions</a>里看到，而在<a href="https://member.impactradius.com/secure/advertiser/Adv_Campaign_Dashboard/r11/report/viewReport.report?handle=adv_generation_foundation_campaign_dashboard">Reports</a>里看到至少需要2+小时。</p>
 
-<p>如果20分钟后还没在Pending Actions里看到回传的数据，那极有可能你回传给IR的数据是Invalid的，IR不予处理。这时，要怎样才能看到IR对此次回传动作的处理结果呢？这要根据你所使用的Tracking Method来定。
+<p>如果20分钟后还没在Pending Actions里看到回传的数据，那极有可能你回传给IR的数据是Invalid的，IR不予处理。这时，要怎样才能看到IR对此次回传动作的处理结果呢？这要根据你所使用的Tracking Method来定。<br/>
 1. Batch FTP<br/>
    请前去注册邮箱里查看标题为<code>Data Submission Received</code>的邮件，里面有Batch Summaries的链接，打开后查看Batch Details所指向的内容。<br/>
 2. Web Services</p>
@@ -436,8 +470,7 @@ IR接收到数据后一般20分钟内就可以在<a href="https://member.impactr
 1. 在对Action Tracker测试时，数据已经回传给了IR，但是在Action Trackers列表页面中对应的Test Status却是<code>System Invalidated</code>。<br/>
 原因：可能是因为你回传的ActionTrackerId和当前测试的action tracker的id不一致造成的。 <br/>
 2. 在做线上模拟测试时，数据明明已经回传给了IR，过了一段时间后却仍然在Pending Actions里看不到。<br/>
-原因：极有可能是EventDate的问题。这里我们再重申一下EventDate的限制条件，它<code>必须是在Click Date之后且不能是一个未来的时间</code>。Click Date是IR产生clickid的那个时间点，正常情况下EventDate肯定是在Click Date之后的，但是怕就怕在对EventDate做格式化的时候格错。格式化字符串<code>dd-MMM-yyyy hh:mm:ss z</code>是一个整体，不能先把EventDate格式化成<code>dd-MMM-yyyy hh:mm:ss</code>后再加上所在的timezone的缩写。如果你使用的编程语言本身(如C#，但C#有第三方库可以做到)不支持格式化出包含timezone缩写的形式，那折衷方案是先把EventDate格式化成UTC时间的字符串然后再拼接上<code>GMT</code>(注意GMT前有个空格)来表示使用的时区是GMT。<br/>
-3. <code>Amount</code>表示的是订单/运单金额，请Advertiser不要误认为它是你们给到Extrabux的返点金额(或者叫佣金)，返点金额(佣金)应该给Extrabux多少是由IR来计算的，Advertiser无须关心。</p>
+原因：极有可能是EventDate的问题。这里我们再重申一下EventDate的限制条件，它<code>必须是在Click Date之后且不能是一个未来的时间</code>。Click Date是IR产生clickid的那个时间点，正常情况下EventDate肯定是在Click Date之后的，但是怕就怕在对EventDate做格式化的时候格错。格式化字符串<code>dd-MMM-yyyy hh:mm:ss z</code>是一个整体，不能先把EventDate格式化成<code>dd-MMM-yyyy hh:mm:ss</code>后再加上所在的timezone的缩写。如果你使用的编程语言本身(如C#，但C#有第三方库可以做到)不支持格式化出包含timezone缩写的形式，那折衷方案是先把EventDate格式化成UTC时间的字符串然后再拼接上<code>GMT</code>(注意GMT前有个空格)来表示使用的时区是GMT。</p>
 <div class="footnotes">
 <hr/>
 <ol>
