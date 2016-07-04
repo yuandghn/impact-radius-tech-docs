@@ -1,4 +1,5 @@
-`文档处于不断地更新和完善的过程中，我们会把各个Advertiser接入过程中遇到的各种问题记录下来并分享给所有的Advertiser。`
+`文档处于不断地更新和完善的过程中，我们会把各个Advertiser接入过程中遇到的各种问题记录下来并分享给所有的Advertiser。`  
+`因IR文档系统升级，如果您发现文中某些链接已经失效请告知我们，也可到IR新的Help Center(https://help.impactradius.com/hc/en-us)中查看或搜索相关的文档。`
 
 ###角色
 [Extrabux](http://www.extrabux.com/)是Media Partner，电商网站/转运公司是Advertiser，[Impact Radius](http://www.impactradius.com/)(以下简称IR)是广告联盟。Extrabux和Advertiser通过IR系统联系在一起。
@@ -51,7 +52,7 @@ Advertiser须将这两个参数[^6]保存到cookie里并设置一定的有效期
 ######以下是几种常用的Tracking Method：  
 - Pixel  
 这是一种在交易完成时实时[^11]回传数据的方式。它通过在网页里嵌入JavaScript代码的方式来回传数据。一般不适用于交易完成后的状态可能会发生变化的情况，如订单取消等。  
-更多信息请参考文档[JavaScript Conversion Code](http://support.impactradius.com/display/ADVERTISER/JavaScript+Conversion+Code)。
+更多信息请参考文档[JavaScript Conversion Code](https://help.impactradius.com/hc/en-us/articles/203769585-Javascript-Conversion-Code)。
 
 - Batch FTP  
 这是一种通过上传数据文件到IR的FTP服务器来回传数据的方式。IR接受两种格式的数据文件：XML和CSV。推荐使用可读性更强的XML格式。各个编程语言都有FTP client可以使用。  
@@ -199,12 +200,16 @@ JSON格式：
 		// sku: A unique product identifier, or Storage Keeping Unit
 		// amt: The total sale amount for this line item.  Required
 		// qty: The quantity of the line item.  Required.
+		// 一般来说irEvent.addItem(...)方法是放在一个for each循环中的,因为订单中一般都有多个商品,每个商品都需要addItem一下.
   		irEvent.addItem("electronics", "220-2300", "112000.00", "56");  // 56 identical gizmos at 2000.00 each
   		irEvent.setCurrency("CNY"); //可选项，请参考前面对Currency字段的描述。
 
  		irEvent.fire();
 	</script>
 细心的同学可能注意到了，这里面回传的参数与我们在流程细节里描述的不一致，根本就没有CampaignId、ActionTrackerId、ClickId和EventDate等参数。是的，在Pixel方式里的确不用显式的传入这些参数，IR会通过其他形式自己获取到。比如，页面加载的"/js/3141/8324/irv3.js"文件里就包含了CampaignId和ActionTrackerId；ClickId在传给你的入口页面之前IR就已经以其他方式保存到自己的cookie里了，当irEvent.fire()的时候就会带过去，同时呢，EventDate也有了。  
+
+如果你想更多的了解这段JavaScript代码背后是怎么工作的，不妨把d33wwcok8lortz.cloudfront.net/js/3141/8324/irv3.js下载下来看下其源码就明白了。可以重点看下addItem()、fire()、getQueryString()等方法。  
+
 
 测试流程大同小异，我们以Web Service方式为例：   
 ![web-service-test-page](http://7xnrpy.com1.z0.glb.clouddn.com/web-service-test-page-new.png)

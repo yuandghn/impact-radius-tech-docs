@@ -156,7 +156,8 @@ sup {
 
 </head>
 <body>
-<p><code>文档处于不断地更新和完善的过程中，我们会把各个Advertiser接入过程中遇到的各种问题记录下来并分享给所有的Advertiser。</code></p>
+<p><code>文档处于不断地更新和完善的过程中，我们会把各个Advertiser接入过程中遇到的各种问题记录下来并分享给所有的Advertiser。</code><br/>
+<code>因IR文档系统升级，如果您发现文中某些链接已经失效请告知我们，也可到IR新的Help Center(https://help.impactradius.com/hc/en-us)中查看或搜索相关的文档。</code></p>
 
 <h3>角色</h3>
 
@@ -225,7 +226,7 @@ Advertiser须将这两个参数<sup id="fnref:6"><a href="#fn:6" rel="footnote">
 <ul>
 <li><p>Pixel<br/>
 这是一种在交易完成时实时<sup id="fnref:11"><a href="#fn:11" rel="footnote">11</a></sup>回传数据的方式。它通过在网页里嵌入JavaScript代码的方式来回传数据。一般不适用于交易完成后的状态可能会发生变化的情况，如订单取消等。<br/>
-更多信息请参考文档<a href="http://support.impactradius.com/display/ADVERTISER/JavaScript+Conversion+Code">JavaScript Conversion Code</a>。</p></li>
+更多信息请参考文档<a href="https://help.impactradius.com/hc/en-us/articles/203769585-Javascript-Conversion-Code">JavaScript Conversion Code</a>。</p></li>
 <li><p>Batch FTP<br/>
 这是一种通过上传数据文件到IR的FTP服务器来回传数据的方式。IR接受两种格式的数据文件：XML和CSV。推荐使用可读性更强的XML格式。各个编程语言都有FTP client可以使用。<br/>
 创建此类型的Action Tracker时点击<code>Email FTP Username and Password</code>按钮， IR会把FTP服务器的用户名/密码发到Advertiser的注册邮箱里。<br/>
@@ -398,6 +399,7 @@ Removal or modification of this code will disrupt marketing activities. This cod
     // sku: A unique product identifier, or Storage Keeping Unit
     // amt: The total sale amount for this line item.  Required
     // qty: The quantity of the line item.  Required.
+    // 一般来说irEvent.addItem(...)方法是放在一个for each循环中的,因为订单中一般都有多个商品,每个商品都需要addItem一下.
     irEvent.addItem("electronics", "220-2300", "112000.00", "56");  // 56 identical gizmos at 2000.00 each
     irEvent.setCurrency("CNY"); //可选项，请参考前面对Currency字段的描述。
 
@@ -406,6 +408,8 @@ Removal or modification of this code will disrupt marketing activities. This cod
 </code></pre>
 
 <p>细心的同学可能注意到了，这里面回传的参数与我们在流程细节里描述的不一致，根本就没有CampaignId、ActionTrackerId、ClickId和EventDate等参数。是的，在Pixel方式里的确不用显式的传入这些参数，IR会通过其他形式自己获取到。比如，页面加载的"/js/3141/8324/irv3.js"文件里就包含了CampaignId和ActionTrackerId；ClickId在传给你的入口页面之前IR就已经以其他方式保存到自己的cookie里了，当irEvent.fire()的时候就会带过去，同时呢，EventDate也有了。</p>
+
+<p>如果你想更多的了解这段JavaScript代码背后是怎么工作的，不妨把d33wwcok8lortz.cloudfront.net/js/3141/8324/irv3.js下载下来看下其源码就明白了。可以重点看下addItem()、fire()、getQueryString()等方法。</p>
 
 <p>测试流程大同小异，我们以Web Service方式为例： <br/>
 <img src="http://7xnrpy.com1.z0.glb.clouddn.com/web-service-test-page-new.png" alt="web-service-test-page" />
